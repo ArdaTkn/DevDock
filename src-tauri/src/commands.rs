@@ -144,7 +144,7 @@ pub fn open_project_editor(app: AppHandle, path: String) -> Result<(), ErrorDto>
 #[tauri::command]
 pub fn detect_editor(app: AppHandle) -> Result<Option<String>, ErrorDto> {
     let _ = app;
-    Ok(SystemActions::detect_editor().map(|e| e.name.to_string()))
+    Ok(SystemActions::detect_editor().map(|s| s.to_string()))
 }
 
 fn find_project_id(db: &AppDb, path: &str) -> crate::error::Result<Option<i64>> {

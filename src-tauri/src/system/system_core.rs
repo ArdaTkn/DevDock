@@ -1,48 +1,31 @@
 use crate::error::{Error, Result};
 use std::path::Path;
-#[cfg(target_os = "macos")]
-use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Child, Command};
 
-/// Cross-platform "open this project in an editor / terminal / file manager".
+/// Launches editors / terminals / file managers for a project.
 ///
-/// On macOS, editors and terminals are detected from their `.app` bundles in
-/// `/Applications` (not just PATH CLIs, which are often uninstalled) and opened
-/// with `open -a`. PATH CLIs are preferred when present.
+/// All launchers use `.spawn()` (fire-and-forget) rather than `.status()`:
+/// waiting on a GUI app's process can hang the command thread and make the
+/// app feel frozen/crashed. Returns as soon as the child is forked.
 pub struct SystemActions;
 
-/// Candidate editors as (display name, PATH CLI binary).
-const EDITORS: &[(&str, &str)] = &[
-    ("Cursor", "cursor"),
-    ("VS Code", "code"),
-    ("Zed", "zed"),
-    ("OpenCode", "opencode"),
-    ("Windsurf", "windsurf"),
-];
-
-/// macOS-only candidate `.app` bundles as (bundle name, display name).
+/// On macOS, "VS Code" is the canonical editor (per product decision).
 #[cfg(target_os = "macos")]
-const MACOS_EDITOR_BUNDLES: &[(&str, &str)] = &[
-    ("Cursor", "Cursor"),
-    ("Visual Studio Code", "VS Code"),
-    ("OpenCode", "OpenCode"),
-    ("Zed", "Zed"),
-    ("Windsurf", "Windsurf"),
-    ("IntelliJ IDEA", "IntelliJ IDEA"),
-    ("PyCharm", "PyCharm"),
-];
-
-/// A detected editor.
-pub struct Editor {
-    pub name: &'static str,
-    /// PATH CLI launcher (used on all platforms and as fallback).
-    pub bin: &'static str,
-    /// macOS-only `.app` bundle name to open via `open -a` (preferred on macOS).
-    #[cfg(target_os = "macos")]
-    pub bundle: Option<&'static str>,
-}
+const MACOS_EDITOR_BUNDLE: &str = "Visual Studio Code";
 
 impl SystemActions {
+    fn spawn(cmd: &mut Command) -> Result<Child> {
+        cmd.spawn()
+            .map_err(|e| Error::Other(format!("failed to launch: {e}")))
+    }
+
+    #[cfg(target_os = "macos")]
+    fn bundle_exists(app: &str) -> bool {
+        std::path::Path::new("/Applications")
+            .join(format!("{app}.app"))
+            .is_dir()
+    }
+
     /// Opens the project folder in the system file manager.
     pub fn open_folder(path: &Path) -> Result<()> {
         if !path.is_dir() {
@@ -51,8 +34,8 @@ impl SystemActions {
                 path.display()
             )));
         }
-        let status = Self::folder_command(path).status();
-        status
+        let mut cmd = Self::folder_command(path);
+        Self::spawn(&mut cmd)
             .map(|_| ())
             .map_err(|e| Error::OpenFolder(e.to_string()))
     }
@@ -79,62 +62,47 @@ impl SystemActions {
         c
     }
 
-    /// Opens the preferred detected editor in the project directory.
+    /// Opens the project in VS Code (the canonical editor).
     pub fn open_editor(path: &Path) -> Result<()> {
-        let editor = Self::detect_editor().ok_or(Error::EditorNotFound)?;
-
         #[cfg(target_os = "macos")]
-        if let Some(bundle) = editor.bundle {
-            let status = Command::new("open").args(["-a", bundle]).arg(path).status();
-            return status.map(|_| ()).map_err(|_| Error::EditorNotFound);
+        {
+            if !Self::bundle_exists(MACOS_EDITOR_BUNDLE) {
+                return Err(Error::EditorNotFound);
+            }
+            let mut cmd = Command::new("open");
+            cmd.args(["-a", MACOS_EDITOR_BUNDLE]).arg(path);
+            Self::spawn(&mut cmd)
+                .map(|_| ())
+                .map_err(|_| Error::EditorNotFound)
         }
-
-        Command::new(editor.bin)
-            .arg(path)
-            .status()
-            .map(|_| ())
-            .map_err(|_| Error::EditorNotFound)
+        #[cfg(not(target_os = "macos"))]
+        {
+            let mut cmd = Command::new("code");
+            cmd.arg(path);
+            Self::spawn(&mut cmd)
+                .map(|_| ())
+                .map_err(|_| Error::EditorNotFound)
+        }
     }
 
-    /// Returns the preferred detected editor, or None.
-    pub fn detect_editor() -> Option<Editor> {
-        // Prefer a PATH CLI when it's actually installed.
-        for (name, bin) in EDITORS {
-            if Self::binary_exists(bin) {
-                return Some(Editor {
-                    name,
-                    bin,
-                    #[cfg(target_os = "macos")]
-                    bundle: None,
-                });
-            }
-        }
-
-        // On macOS fall back to `.app` bundles in /Applications.
+    /// Returns the display name of the detected editor, if any (used in UI).
+    pub fn detect_editor() -> Option<&'static str> {
         #[cfg(target_os = "macos")]
-        for (bundle, name) in MACOS_EDITOR_BUNDLES {
-            if Self::macos_bundle_exists(bundle) {
-                return Some(Editor {
-                    name,
-                    bin: "",
-                    bundle: Some(bundle),
-                });
+        {
+            if Self::bundle_exists(MACOS_EDITOR_BUNDLE) {
+                return Some("VS Code");
             }
         }
-
+        #[cfg(not(target_os = "macos"))]
+        {
+            if Self::binary_exists("code") {
+                return Some("VS Code");
+            }
+        }
         None
     }
 
-    #[cfg(target_os = "macos")]
-    fn macos_bundle_exists(app: &str) -> bool {
-        let candidates = [
-            PathBuf::from("/Applications").join(format!("{app}.app")),
-            PathBuf::from("/System/Applications").join(format!("{app}.app")),
-        ];
-        candidates.iter().any(|p| p.is_dir())
-    }
-
-    /// Opens a new terminal window in `path`, preferring iTerm on macOS.
+    /// Opens a terminal in `path`, preferring iTerm on macOS.
     pub fn open_terminal(path: &Path) -> Result<()> {
         #[cfg(target_os = "macos")]
         {
@@ -146,19 +114,18 @@ impl SystemActions {
                 .iter()
                 .find(|t| Self::binary_exists(t))
                 .ok_or(Error::TerminalNotFound)?;
-            let dir = format!("--working-directory={}", path.display());
-            Command::new(terminal)
-                .arg(&dir)
-                .status()
+            let mut cmd = Command::new(terminal);
+            cmd.arg(format!("--working-directory={}", path.display()));
+            Self::spawn(&mut cmd)
                 .map(|_| ())
                 .map_err(|_| Error::TerminalNotFound)
         }
         #[cfg(target_os = "windows")]
         {
-            Command::new("cmd")
-                .args(["/c", "start", "cmd", "/K"])
-                .arg(format!("cd /d \"{}\"", path.display()))
-                .status()
+            let mut cmd = Command::new("cmd");
+            cmd.args(["/c", "start", "cmd", "/K"])
+                .arg(format!("cd /d \"{}\"", path.display()));
+            Self::spawn(&mut cmd)
                 .map(|_| ())
                 .map_err(|_| Error::TerminalNotFound)
         }
@@ -166,12 +133,11 @@ impl SystemActions {
 
     #[cfg(target_os = "macos")]
     fn open_terminal_macos(path: &Path) -> Result<()> {
-        // bash-safe `cd '<dir>'` (single-quote escapes included).
+        // bash-safe `cd '<dir>'`.
         let cd_cmd = format!("cd '{}'", path.display().to_string().replace('\'', "'\\''"));
+        let embed = cd_cmd.replace('\\', "\\\\").replace('"', "\\\"");
 
-        // Preferred: iTerm2.
-        if Self::macos_bundle_exists("iTerm") {
-            let embed = cd_cmd.replace('\\', "\\\\").replace('"', "\\\"");
+        if Self::bundle_exists("iTerm") {
             let script = format!(
                 "tell application \"iTerm\"\n\
                  \tactivate\n\
@@ -183,29 +149,21 @@ impl SystemActions {
                  \tend tell\n\
                  end tell"
             );
-            let ok = Command::new("osascript")
-                .arg("-e")
-                .arg(&script)
-                .status()
-                .map(|s| s.success())
-                .unwrap_or(false);
-            if ok {
-                return Ok(());
-            }
+            let mut cmd = Command::new("osascript");
+            cmd.args(["-e", &script]);
+            let _ = Self::spawn(&mut cmd);
+            return Ok(());
         }
 
-        // Fallback: Terminal.app.
-        let embed = cd_cmd.replace('\\', "\\\\").replace('"', "\\\"");
         let script = format!("tell application \"Terminal\" to do script \"{embed}\"");
-        Command::new("osascript")
-            .arg("-e")
-            .arg(&script)
-            .status()
+        let mut cmd = Command::new("osascript");
+        cmd.args(["-e", &script]);
+        Self::spawn(&mut cmd)
             .map(|_| ())
             .map_err(|_| Error::TerminalNotFound)
     }
 
-    #[cfg(not(target_os = "windows"))]
+    #[cfg(target_os = "linux")]
     fn binary_exists(bin: &str) -> bool {
         Command::new("which")
             .arg(bin)
