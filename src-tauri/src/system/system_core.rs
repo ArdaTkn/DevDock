@@ -13,6 +13,12 @@ pub struct SystemActions;
 #[cfg(target_os = "macos")]
 const MACOS_EDITOR_BUNDLE: &str = "Visual Studio Code";
 
+/// Recognised terminals on macOS. macOS has no true "default terminal" system
+/// setting (the OS default is always Terminal.app), so we *detect* whichever
+/// of these is installed and use it, falling back to Terminal.app if none is.
+#[cfg(target_os = "macos")]
+const TERMINALS: &[&str] = &["iTerm", "Warp", "Ghostty", "Hyper", "Alacritty", "Kitty"];
+
 impl SystemActions {
     fn spawn(cmd: &mut Command) -> Result<Child> {
         cmd.spawn()
@@ -132,35 +138,57 @@ impl SystemActions {
     }
 
     #[cfg(target_os = "macos")]
+    fn detect_terminal() -> Option<&'static str> {
+        TERMINALS
+            .iter()
+            .copied()
+            .find(|name| Self::bundle_exists(name))
+    }
+
+    #[cfg(target_os = "macos")]
     fn open_terminal_macos(path: &Path) -> Result<()> {
         // bash-safe `cd '<dir>'`.
         let cd_cmd = format!("cd '{}'", path.display().to_string().replace('\'', "'\\''"));
         let embed = cd_cmd.replace('\\', "\\\\").replace('"', "\\\"");
 
-        if Self::bundle_exists("iTerm") {
-            let script = format!(
-                "tell application \"iTerm\"\n\
-                 \tactivate\n\
-                 \ttry\n\
-                 \t\tcreate window with default profile\n\
-                 \tend try\n\
-                 \ttell current session of current window\n\
-                 \t\twrite text \"{embed}\"\n\
-                 \tend tell\n\
-                 end tell"
-            );
-            let mut cmd = Command::new("osascript");
-            cmd.args(["-e", &script]);
-            let _ = Self::spawn(&mut cmd);
-            return Ok(());
+        // Use whatever terminal is installed on the machine (no static choice).
+        match Self::detect_terminal() {
+            // iTerm exposes a rich AppleScript: new window + write the cd command.
+            Some("iTerm") => {
+                let script = format!(
+                    "tell application \"iTerm\"\n\
+                     \tactivate\n\
+                     \ttry\n\
+                     \t\tcreate window with default profile\n\
+                     \tend try\n\
+                     \ttell current session of current window\n\
+                     \t\twrite text \"{embed}\"\n\
+                     \tend tell\n\
+                     end tell"
+                );
+                let mut cmd = Command::new("osascript");
+                cmd.args(["-e", &script]);
+                let _ = Self::spawn(&mut cmd);
+                Ok(())
+            }
+            // Any other recognised terminal: launch it pointed at the directory.
+            Some(name) => {
+                let mut cmd = Command::new("open");
+                cmd.args(["-a", name]).arg(path);
+                Self::spawn(&mut cmd)
+                    .map(|_| ())
+                    .map_err(|_| Error::TerminalNotFound)
+            }
+            // No third-party terminal → the macOS default, Terminal.app.
+            None => {
+                let script = format!("tell application \"Terminal\" to do script \"{embed}\"");
+                let mut cmd = Command::new("osascript");
+                cmd.args(["-e", &script]);
+                Self::spawn(&mut cmd)
+                    .map(|_| ())
+                    .map_err(|_| Error::TerminalNotFound)
+            }
         }
-
-        let script = format!("tell application \"Terminal\" to do script \"{embed}\"");
-        let mut cmd = Command::new("osascript");
-        cmd.args(["-e", &script]);
-        Self::spawn(&mut cmd)
-            .map(|_| ())
-            .map_err(|_| Error::TerminalNotFound)
     }
 
     #[cfg(target_os = "linux")]
