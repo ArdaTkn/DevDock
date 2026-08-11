@@ -7,31 +7,13 @@ use std::process::Command;
 pub struct SystemActions;
 
 const EDITORS: &[(&str, &[&str])] = &[
-    // (app bundle/name, candidate binaries on PATH)
-    ("code", &["code"]),     // VS Code
-    ("cursor", &["cursor"]), // Cursor
-    ("zed", &["zed"]),       // Zed
-    ("windsurf", &["windsurf"]),
-    ("jb-toolbox", &["jetbrains-toolbox"]),
+    // (editor name, candidate binaries on PATH)
+    ("VS Code", &["code"]),
+    ("Cursor", &["cursor"]),
+    ("Zed", &["zed"]),
+    ("Windsurf", &["windsurf"]),
+    ("JetBrains Toolbox", &["jetbrains-toolbox"]),
 ];
-
-#[cfg(target_os = "macos")]
-fn open_cmd() -> Command {
-    Command::new("open")
-}
-
-#[cfg(not(target_os = "macos"))]
-fn open_cmd() -> Command {
-    // `xdg-open` on Linux, `start` handled in a platform branch.
-    #[cfg(target_os = "linux")]
-    {
-        Command::new("xdg-open")
-    }
-    #[cfg(target_os = "windows")]
-    {
-        unreachable!("windows open handled separately");
-    }
-}
 
 impl SystemActions {
     /// Opens the project folder in the system file manager.
@@ -42,43 +24,46 @@ impl SystemActions {
                 path.display()
             )));
         }
-        Self::launch_opener(path)
+        let status = Self::folder_command(path).status();
+        status
+            .map(|_| ())
+            .map_err(|e| Error::OpenFolder(e.to_string()))
     }
 
     #[cfg(target_os = "macos")]
-    fn launch_opener(path: &Path) -> Result<()> {
-        open_cmd()
-            .arg(path)
-            .status()
-            .map_err(|e| Error::OpenFolder(e.to_string()))?;
-        Ok(())
+    fn folder_command(path: &Path) -> Command {
+        let mut c = Command::new("open");
+        c.arg(path);
+        c
     }
 
     #[cfg(target_os = "linux")]
-    fn launch_opener(path: &Path) -> Result<()> {
-        open_cmd()
-            .arg(path)
-            .status()
-            .map_err(|e| Error::OpenFolder(e.to_string()))?;
-        Ok(())
+    fn folder_command(path: &Path) -> Command {
+        let mut c = Command::new("xdg-open");
+        c.arg(path);
+        c
     }
 
-    /// Opens an editor binary if any supported one is installed.
+    #[cfg(target_os = "windows")]
+    fn folder_command(path: &Path) -> Command {
+        let mut c = Command::new("cmd");
+        c.args(["/c", "explorer", &path.to_string_lossy()]);
+        c
+    }
+
+    /// Opens the preferred detected editor in the project directory.
     pub fn open_editor(path: &Path) -> Result<()> {
-        let bin = Self::detect_editor().ok_or(Error::EditorNotFound)?;
-        Command::new(bin)
-            .arg(path)
-            .status()
-            .map_err(|_| Error::EditorNotFound)?;
-        Ok(())
+        let editor = Self::detect_editor().ok_or(Error::EditorNotFound)?;
+        let status = Command::new(editor.bin).arg(path).status();
+        status.map(|_| ()).map_err(|_| Error::EditorNotFound)
     }
 
-    /// Returns the preferred detected editor binary name, or None.
-    pub fn detect_editor() -> Option<&'static str> {
-        for (_, bins) in EDITORS {
-            for b in *bins {
-                if Self::binary_exists(b) {
-                    return Some(b);
+    /// Returns the preferred detected editor, or None.
+    pub fn detect_editor() -> Option<Editor> {
+        for (name, bins) in EDITORS {
+            for bin in *bins {
+                if Self::binary_exists(bin) {
+                    return Some(Editor { name, bin });
                 }
             }
         }
@@ -86,51 +71,69 @@ impl SystemActions {
     }
 
     /// Opens a new terminal window in `path`.
-    /// Uses Terminal.app on macOS; falls back gracefully otherwise.
     pub fn open_terminal(path: &Path) -> Result<()> {
         #[cfg(target_os = "macos")]
         {
+            let clean = path.display().to_string().replace('\'', "'\\''");
             let script = format!(
                 "tell application \"Terminal\" to do script \"cd '{}'\"",
-                path.display().to_string().replace('\'', "'\\''")
+                clean
             );
             Command::new("osascript")
                 .arg("-e")
                 .arg(&script)
                 .status()
-                .map_err(|_| Error::TerminalNotFound)?;
-            return Ok(());
+                .map(|_| ())
+                .map_err(|_| Error::TerminalNotFound)
         }
+
         #[cfg(target_os = "linux")]
         {
             let terminal = ["gnome-terminal", "konsole", "x-terminal-emulator"]
                 .iter()
                 .find(|t| Self::binary_exists(t))
                 .ok_or(Error::TerminalNotFound)?;
-            Command::new(terminal).arg(format!("--working-directory={}", path.display()));
-            return Ok(());
+            let dir = format!("--working-directory={}", path.display());
+            Command::new(terminal)
+                .arg(&dir)
+                .status()
+                .map(|_| ())
+                .map_err(|_| Error::TerminalNotFound)
         }
+
         #[cfg(target_os = "windows")]
         {
             Command::new("cmd")
-                .arg("/c")
-                .arg("start")
-                .arg("cmd")
-                .arg("/K")
-                .arg(format!("cd /d \"{}\"", path.display().to_string()))
+                .args(["/c", "start", "cmd", "/K"])
+                .arg(format!("cd /d \"{}\"", path.display()))
                 .status()
-                .map_err(|_| Error::TerminalNotFound)?;
-            return Ok(());
+                .map(|_| ())
+                .map_err(|_| Error::TerminalNotFound)
         }
-        #[allow(unreachable_code)]
-        Err(Error::TerminalNotFound)
     }
 
+    #[cfg(not(target_os = "windows"))]
     fn binary_exists(bin: &str) -> bool {
-        let probe = Command::new("which").arg(bin).output();
-        match probe {
-            Ok(o) => o.status.success(),
-            Err(_) => false,
-        }
+        Command::new("which")
+            .arg(bin)
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
     }
+
+    #[cfg(target_os = "windows")]
+    fn binary_exists(bin: &str) -> bool {
+        Command::new("where")
+            .arg(bin)
+            .output()
+            .map(|o| o.status.success())
+            .unwrap_or(false)
+    }
+}
+
+/// A detected editor with its display name and launcher binary.
+#[derive(Clone, Copy)]
+pub struct Editor {
+    pub name: &'static str,
+    pub bin: &'static str,
 }
