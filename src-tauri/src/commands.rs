@@ -130,7 +130,31 @@ pub fn open_project_terminal(app: AppHandle, path: String) -> Result<(), ErrorDt
     if let Some(id) = find_project_id(&state(&app).db, &path)? {
         let _ = ProjectRepo::touch_recent(&state(&app).db, id);
     }
-    SystemActions::open_terminal(&PathBuf::from(path)).map_err(Into::into)
+    let pref = state(&app)
+        .db
+        .get_setting("terminal")?
+        .filter(|s| !s.is_empty());
+    SystemActions::open_terminal(&PathBuf::from(path), pref.as_deref()).map_err(Into::into)
+}
+
+#[tauri::command]
+pub fn list_terminals(_app: AppHandle) -> Result<Vec<String>, ErrorDto> {
+    Ok(SystemActions::detect_terminals())
+}
+
+#[tauri::command]
+pub fn get_terminal_pref(app: AppHandle) -> Result<Option<String>, ErrorDto> {
+    Ok(state(&app)
+        .db
+        .get_setting("terminal")?
+        .filter(|s| !s.is_empty()))
+}
+
+#[tauri::command]
+pub fn set_terminal_pref(app: AppHandle, pref: Option<String>) -> Result<(), ErrorDto> {
+    let value = pref.unwrap_or_default();
+    state(&app).db.set_setting("terminal", &value)?;
+    Ok(())
 }
 
 #[tauri::command]

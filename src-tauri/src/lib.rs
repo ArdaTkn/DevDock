@@ -58,6 +58,9 @@ pub fn run() {
             commands::open_project_terminal,
             commands::open_project_editor,
             commands::detect_editor,
+            commands::list_terminals,
+            commands::get_terminal_pref,
+            commands::set_terminal_pref,
         ])
         .run(tauri::generate_context!())
         .expect("error while running DevDock");

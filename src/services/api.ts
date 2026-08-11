@@ -48,6 +48,15 @@ export const api = {
 
   detectEditor: () =>
     invoke<string | null>("detect_editor"),
+
+  listTerminals: () =>
+    invoke<string[]>("list_terminals"),
+
+  getTerminalPref: () =>
+    invoke<string | null>("get_terminal_pref"),
+
+  setTerminalPref: (pref: string) =>
+    invoke<void>("set_terminal_pref", { pref }),
 };
 
 /** Turns a Rust ErrorDto into a readable string for inline UI display. */

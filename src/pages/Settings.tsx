@@ -1,13 +1,18 @@
 import { useEffect, useState } from "react";
 import { useProjectsStore } from "../stores/projectsStore";
+import { useSystemStore } from "../stores/systemStore";
 
 export function Settings() {
   const { locations, error, load, addLocation, removeLocation } = useProjectsStore();
+  const { terminals, terminalPref, loadTerminals, loadTerminalPref, setTerminal } =
+    useSystemStore();
   const [dir, setDir] = useState("");
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     void load();
+    void loadTerminals();
+    void loadTerminalPref();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -57,6 +62,32 @@ export function Settings() {
             Add Folder
           </button>
         </div>
+      </section>
+
+      <section className="panel">
+        <h2>Terminal</h2>
+        <p className="muted">
+          Choose which terminal DevDock opens when you press Terminal. Only
+          terminals detected on this system are listed.
+        </p>
+        <select
+          className="select"
+          value={terminalPref}
+          onChange={(e) => void setTerminal(e.target.value)}
+          aria-label="terminal"
+        >
+          <option value="">System default (auto)</option>
+          {terminals.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+        {terminals.length === 0 && (
+          <p className="muted small">
+            No third-party terminals detected — DevDock uses the system default.
+          </p>
+        )}
       </section>
 
       <section className="panel">

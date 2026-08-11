@@ -108,14 +108,44 @@ impl SystemActions {
         None
     }
 
-    /// Opens a terminal in `path`, preferring iTerm on macOS.
-    pub fn open_terminal(path: &Path) -> Result<()> {
+    /// Returns the terminal bundles/CLIs that are actually installed.
+    pub fn detect_terminals() -> Vec<String> {
         #[cfg(target_os = "macos")]
         {
-            Self::open_terminal_macos(path)
+            TERMINALS
+                .iter()
+                .filter(|n| Self::bundle_exists(n))
+                .map(|s| s.to_string())
+                .collect()
         }
         #[cfg(target_os = "linux")]
         {
+            ["gnome-terminal", "konsole", "x-terminal-emulator"]
+                .iter()
+                .filter(|t| Self::binary_exists(t))
+                .map(|s| s.to_string())
+                .collect()
+        }
+        #[cfg(target_os = "windows")]
+        {
+            ["Windows Terminal", "cmd"]
+                .iter()
+                .map(|s| s.to_string())
+                .collect()
+        }
+    }
+
+    /// Opens a terminal in `path`. `preferred` is an optional user-chosen
+    /// terminal (ignored if not installed); otherwise the installed terminal is
+    /// detected, falling back to the OS default (Terminal.app on macOS).
+    pub fn open_terminal(path: &Path, preferred: Option<&str>) -> Result<()> {
+        #[cfg(target_os = "macos")]
+        {
+            Self::open_terminal_macos(path, preferred)
+        }
+        #[cfg(target_os = "linux")]
+        {
+            let _ = preferred; // per-terminal choice is macOS-only for now
             let terminal = ["gnome-terminal", "konsole", "x-terminal-emulator"]
                 .iter()
                 .find(|t| Self::binary_exists(t))
@@ -128,6 +158,7 @@ impl SystemActions {
         }
         #[cfg(target_os = "windows")]
         {
+            let _ = preferred;
             let mut cmd = Command::new("cmd");
             cmd.args(["/c", "start", "cmd", "/K"])
                 .arg(format!("cd /d \"{}\"", path.display()));
@@ -146,13 +177,19 @@ impl SystemActions {
     }
 
     #[cfg(target_os = "macos")]
-    fn open_terminal_macos(path: &Path) -> Result<()> {
+    fn open_terminal_macos(path: &Path, preferred: Option<&str>) -> Result<()> {
         // bash-safe `cd '<dir>'`.
         let cd_cmd = format!("cd '{}'", path.display().to_string().replace('\'', "'\\''"));
         let embed = cd_cmd.replace('\\', "\\\\").replace('"', "\\\"");
 
-        // Use whatever terminal is installed on the machine (no static choice).
-        match Self::detect_terminal() {
+        // Resolve which terminal to use: the user's chosen one if it's actually
+        // installed, otherwise whichever is installed, otherwise the OS default.
+        let target = match preferred {
+            Some(p) if Self::bundle_exists(p) => Some(p),
+            _ => Self::detect_terminal(),
+        };
+
+        match target {
             // iTerm exposes a rich AppleScript: new window + write the cd command.
             Some("iTerm") => {
                 let script = format!(
