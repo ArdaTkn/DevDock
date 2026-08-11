@@ -210,8 +210,7 @@ DevDock is free and open source (MIT). If it helps your workflow, consider:
 
 - ⭐ starring the repo and sharing it with other developers
 - 🐛 filing issues / PRs for bugs, ideas, or new detectors
-- ☕ [GitHub Sponsors](https://github.com/sponsors/ArdaTkn) — helps sustain
-  development. All sponsorships go back into the project.
+
 
 ## License
 
