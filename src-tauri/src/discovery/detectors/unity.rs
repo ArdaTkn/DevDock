@@ -14,8 +14,10 @@ impl ProjectDetector for UnityDetector {
     }
 
     fn detect(&self, dir: &Path, _ctx: &DetectContext) -> Option<Vec<Tech>> {
-        let has_project_version =
-            dir.join("ProjectSettings").join("ProjectVersion.txt").is_file();
+        let has_project_version = dir
+            .join("ProjectSettings")
+            .join("ProjectVersion.txt")
+            .is_file();
         let has_assets = dir.join("Assets").is_dir();
         let has_packages = dir.join("Packages").is_dir();
         if has_project_version || (has_assets && has_packages) {

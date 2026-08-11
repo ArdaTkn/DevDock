@@ -14,7 +14,12 @@ impl ProjectDetector for JavaDetector {
     }
 
     fn detect(&self, dir: &Path, _ctx: &DetectContext) -> Option<Vec<Tech>> {
-        let markers = ["pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle"];
+        let markers = [
+            "pom.xml",
+            "build.gradle",
+            "build.gradle.kts",
+            "settings.gradle",
+        ];
         if markers.iter().any(|m| dir.join(m).is_file()) {
             let mut techs = vec![tech("Java", TechKind::Language)];
             if dir.join("pom.xml").exists() {

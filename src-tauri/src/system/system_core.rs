@@ -8,9 +8,9 @@ pub struct SystemActions;
 
 const EDITORS: &[(&str, &[&str])] = &[
     // (app bundle/name, candidate binaries on PATH)
-    ("code", &["code"]),       // VS Code
-    ("cursor", &["cursor"]),   // Cursor
-    ("zed", &["zed"]),         // Zed
+    ("code", &["code"]),     // VS Code
+    ("cursor", &["cursor"]), // Cursor
+    ("zed", &["zed"]),       // Zed
     ("windsurf", &["windsurf"]),
     ("jb-toolbox", &["jetbrains-toolbox"]),
 ];

@@ -4,12 +4,8 @@ use std::path::{Path, PathBuf};
 /// Returns the canonical (symlink-resolved) absolute path for `p`.
 /// Fails with a human-readable error if the path cannot be canonicalised.
 pub fn canonicalize(p: &Path) -> Result<PathBuf> {
-    p.canonicalize().map_err(|e| {
-        Error::Other(format!(
-            "Path `{}` is not accessible: {e}",
-            p.display()
-        ))
-    })
+    p.canonicalize()
+        .map_err(|e| Error::Other(format!("Path `{}` is not accessible: {e}", p.display())))
 }
 
 /// True if `child` is `base` or lies underneath `base` (canonicalised).

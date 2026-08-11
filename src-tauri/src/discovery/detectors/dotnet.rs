@@ -28,9 +28,9 @@ impl ProjectDetector for DotNetDetector {
 fn has_extension(dir: &Path, ext: &str) -> bool {
     std::fs::read_dir(dir)
         .map(|entries| {
-            entries.flatten().any(|e| {
-                e.path().extension().map(|x| x == ext).unwrap_or(false)
-            })
+            entries
+                .flatten()
+                .any(|e| e.path().extension().map(|x| x == ext).unwrap_or(false))
         })
         .unwrap_or(false)
 }

@@ -61,9 +61,7 @@ pub async fn scan_projects(app: AppHandle) -> Result<ScanSummary, ErrorDto> {
     // Run the scan off the async runtime so the UI stays responsive, emitting
     // `scan-progress` events as projects are ingested.
     let db = tauri::async_runtime::spawn_blocking({
-        move || -> crate::error::Result<ScanSummary> {
-            run_scan(db_dir, handle, app_for_emit)
-        }
+        move || -> crate::error::Result<ScanSummary> { run_scan(db_dir, handle, app_for_emit) }
     })
     .await
     .map_err(|e| ErrorDto {

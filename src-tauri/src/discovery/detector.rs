@@ -69,9 +69,7 @@ impl DetectorRegistry {
     /// True if the given entry-point file path is one we care about, used to
     /// decide whether a directory is worth descending into or is a project root.
     pub fn is_project_marker(dir: &Path) -> bool {
-        PROJECT_MARKERS
-            .iter()
-            .any(|m| dir.join(m).exists())
+        PROJECT_MARKERS.iter().any(|m| dir.join(m).exists())
     }
 }
 

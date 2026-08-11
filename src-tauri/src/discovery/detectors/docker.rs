@@ -17,9 +17,14 @@ impl ProjectDetector for DockerDetector {
     fn detect(&self, dir: &Path, _ctx: &DetectContext) -> Option<Vec<Tech>> {
         let has_dockerfile =
             dir.join("Dockerfile").is_file() || dir.join("Dockerfile.dev").is_file();
-        let has_compose = ["docker-compose.yml", "docker-compose.yaml", "compose.yml", "compose.yaml"]
-            .iter()
-            .any(|f| dir.join(f).is_file());
+        let has_compose = [
+            "docker-compose.yml",
+            "docker-compose.yaml",
+            "compose.yml",
+            "compose.yaml",
+        ]
+        .iter()
+        .any(|f| dir.join(f).is_file());
         if has_dockerfile || has_compose {
             Some(vec![tech("Docker", TechKind::Tool)])
         } else {

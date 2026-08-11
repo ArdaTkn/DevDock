@@ -71,7 +71,11 @@ impl GitCommand {
         for line in raw.lines() {
             if let Some(branch_part) = line.strip_prefix("## ") {
                 // "## main...origin/main [ahead 1]" → "main"
-                let branch = branch_part.split("...").next().unwrap_or("HEAD").to_string();
+                let branch = branch_part
+                    .split("...")
+                    .next()
+                    .unwrap_or("HEAD")
+                    .to_string();
                 head = Some(branch);
                 continue;
             }
@@ -97,10 +101,7 @@ impl GitCommand {
     }
 
     fn last_commit(dir: &Path) -> Result<(Option<String>, Option<i64>, Option<String>)> {
-        let raw = match Self::run(
-            dir,
-            &["log", "-1", "--format=%h%x09%s%x09%ct"],
-        ) {
+        let raw = match Self::run(dir, &["log", "-1", "--format=%h%x09%s%x09%ct"]) {
             Ok(r) => r,
             Err(_) => return Ok((None, None, None)), // empty repo
         };

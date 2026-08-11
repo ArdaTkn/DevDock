@@ -170,9 +170,8 @@ impl ProjectRepo {
     }
 
     fn techs_for(conn: &rusqlite::Connection, project_id: i64) -> Result<Vec<Tech>> {
-        let mut stmt = conn.prepare(
-            "SELECT tech,kind FROM project_techs WHERE project_id=?1 ORDER BY tech",
-        )?;
+        let mut stmt =
+            conn.prepare("SELECT tech,kind FROM project_techs WHERE project_id=?1 ORDER BY tech")?;
         let rows = stmt.query_map(rusqlite::params![project_id], |r| {
             let kind_str: String = r.get(1)?;
             let kind = match kind_str.as_str() {
@@ -263,9 +262,8 @@ impl ProjectRepo {
 
     pub fn list_recent(db: &AppDb, limit: u64) -> Result<Vec<Project>> {
         let conn = db.conn();
-        let mut stmt = conn.prepare(
-            "SELECT project_id FROM recent_projects ORDER BY opened_at DESC LIMIT ?1",
-        )?;
+        let mut stmt = conn
+            .prepare("SELECT project_id FROM recent_projects ORDER BY opened_at DESC LIMIT ?1")?;
         let ids: Vec<i64> = stmt
             .query_map(rusqlite::params![limit], |r| r.get(0))?
             .collect::<std::result::Result<_, _>>()?;

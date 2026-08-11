@@ -61,5 +61,8 @@ fn main() {
         println!("      {}", p.path);
     }
 
-    println!("\ndone. ({} clean, {} dirty)", summary.clean_count, summary.dirty_count);
+    println!(
+        "\ndone. ({} clean, {} dirty)",
+        summary.clean_count, summary.dirty_count
+    );
 }

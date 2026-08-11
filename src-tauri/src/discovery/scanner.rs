@@ -152,21 +152,25 @@ impl Scanner {
                 Err(_) => return Ok(false), // vanished mid-scan
             };
             let is_git = path.join(".git").exists();
-            let ctx = DetectContext { is_git_repo: is_git };
+            let ctx = DetectContext {
+                is_git_repo: is_git,
+            };
             let techs: Vec<Tech> = match self.registry.detect_all(path, &ctx) {
                 Some(t) => t,
                 None => return Ok(false), // not a project after all
             };
 
             let name = crate::fs::path_name(path);
-            let relative = path
-                .file_name()
-                .map(|_| path.to_string_lossy().to_string());
+            let relative = path.file_name().map(|_| path.to_string_lossy().to_string());
             let size = dir_size(path).unwrap_or(0);
             let mtime = meta
                 .modified()
                 .ok()
-                .map(|t| t.duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs() as i64).unwrap_or(0))
+                .map(|t| {
+                    t.duration_since(std::time::UNIX_EPOCH)
+                        .map(|d| d.as_secs() as i64)
+                        .unwrap_or(0)
+                })
                 .unwrap_or(0);
 
             let id = ProjectRepo::upsert_project(
@@ -224,7 +228,10 @@ fn dir_size(path: &Path) -> Option<i64> {
     let mut visited = 0u32;
     while let Some(dir) = stack.pop() {
         // Avoid descending into ignored/heavy dirs.
-        let name = dir.file_name().map(|n| n.to_string_lossy().to_string()).unwrap_or_default();
+        let name = dir
+            .file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_default();
         if crate::fs::is_ignored_dir(&name) {
             continue;
         }

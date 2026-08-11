@@ -3,7 +3,7 @@
 
 use devdock_lib::discovery::detector::{DetectContext, DetectorRegistry};
 use devdock_lib::discovery::scanner::{ScanHandle, Scanner};
-use devdock_lib::git::git::GitCommand;
+use devdock_lib::git::git_core::GitCommand;
 use devdock_lib::models::TechKind;
 use devdock_lib::storage::project_repo::ProjectRepo;
 use std::path::PathBuf;
@@ -13,14 +13,30 @@ fn registry() -> DetectorRegistry {
     DetectorRegistry::default_registry()
 }
 
+/// Absolute path to a fixture dir, independent of the CWD (CI runs tests with
+/// `--manifest-path`, so the working dir is the repo root, not src-tauri).
+fn fixture(name: &str) -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures")
+        .join(name)
+}
+
+fn fixtures_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures")
+}
+
 fn ctx(is_git: bool) -> DetectContext {
-    DetectContext { is_git_repo: is_git }
+    DetectContext {
+        is_git_repo: is_git,
+    }
 }
 
 #[test]
 fn node_detector_recognises_node_project() {
-    let dir = PathBuf::from("tests/fixtures/node-project");
-    let techs = registry().detect_all(&dir, &ctx(false)).expect("should detect");
+    let dir = fixture("node-project");
+    let techs = registry()
+        .detect_all(&dir, &ctx(false))
+        .expect("should detect");
     assert!(techs.iter().any(|t| t.name == "Node.js"));
     assert!(techs.iter().any(|t| t.name == "Vite"));
     assert!(techs.iter().any(|t| t.name == "React"));
@@ -28,45 +44,57 @@ fn node_detector_recognises_node_project() {
 
 #[test]
 fn python_detector_recognises_python_project() {
-    let dir = PathBuf::from("tests/fixtures/python-project");
-    let techs = registry().detect_all(&dir, &ctx(false)).expect("should detect");
-    assert!(techs.iter().any(|t| t.name == "Python" && t.kind == TechKind::Language));
+    let dir = fixture("python-project");
+    let techs = registry()
+        .detect_all(&dir, &ctx(false))
+        .expect("should detect");
+    assert!(techs
+        .iter()
+        .any(|t| t.name == "Python" && t.kind == TechKind::Language));
 }
 
 #[test]
 fn rust_detector_recognises_rust_project() {
-    let dir = PathBuf::from("tests/fixtures/rust-project");
-    let techs = registry().detect_all(&dir, &ctx(false)).expect("should detect");
+    let dir = fixture("rust-project");
+    let techs = registry()
+        .detect_all(&dir, &ctx(false))
+        .expect("should detect");
     assert!(techs.iter().any(|t| t.name == "Rust"));
     assert!(techs.iter().any(|t| t.name == "Cargo"));
 }
 
 #[test]
 fn flutter_detector_recognises_flutter_project() {
-    let dir = PathBuf::from("tests/fixtures/flutter-project");
-    let techs = registry().detect_all(&dir, &ctx(false)).expect("should detect");
+    let dir = fixture("flutter-project");
+    let techs = registry()
+        .detect_all(&dir, &ctx(false))
+        .expect("should detect");
     assert!(techs.iter().any(|t| t.name == "Flutter"));
     assert!(techs.iter().any(|t| t.name == "Dart"));
 }
 
 #[test]
 fn docker_detector_recognises_docker_project() {
-    let dir = PathBuf::from("tests/fixtures/docker-project");
-    let techs = registry().detect_all(&dir, &ctx(false)).expect("should detect");
+    let dir = fixture("docker-project");
+    let techs = registry()
+        .detect_all(&dir, &ctx(false))
+        .expect("should detect");
     assert!(techs.iter().any(|t| t.name == "Docker"));
 }
 
 #[test]
 fn mixed_project_detects_both_node_and_docker() {
-    let dir = PathBuf::from("tests/fixtures/mixed-project");
-    let techs = registry().detect_all(&dir, &ctx(false)).expect("should detect");
+    let dir = fixture("mixed-project");
+    let techs = registry()
+        .detect_all(&dir, &ctx(false))
+        .expect("should detect");
     assert!(techs.iter().any(|t| t.name == "Node.js"));
     assert!(techs.iter().any(|t| t.name == "Docker"));
 }
 
 #[test]
 fn empty_dir_is_not_a_project() {
-    let dir = PathBuf::from("tests/fixtures"); // no marker at this level
+    let dir = fixtures_root(); // no marker at this level
     assert!(registry().detect_all(&dir, &ctx(false)).is_none());
 }
 
@@ -124,16 +152,21 @@ fn run(dir: &PathBuf, args: &[&str]) {
 
 #[test]
 fn scan_fixtures_discovers_projects() {
+    let root = fixtures_root();
     let tmp = tempfile::tempdir().expect("tempdir");
     let data_dir = tmp.path().join("data");
     let db = devdock_lib::storage::init_db(&data_dir).expect("db");
-    ProjectRepo::add_scan_location(&db, "tests/fixtures", "fixtures").unwrap();
+    ProjectRepo::add_scan_location(&db, &root.to_string_lossy(), "fixtures").unwrap();
 
     let scanner = Scanner::new(db, true);
     let handle = ScanHandle::new();
-    let summary = scanner.scan_all(&handle).expect("scan");
+    let summary = scanner.scan_all(&handle, &|_| {}).expect("scan");
 
-    // git-clean / git-dirty have no marker files + empty → not counted here,
-    // but node/python/rust/flutter/docker/mixed should be.
-    assert!(summary.total >= 6, "expected >=6 projects, got {}", summary.total);
+    // node/python/rust/flutter/docker/mixed are discovered; git-clean/dirty are
+    // empty dirs with no markers (they become git repos only in the git test).
+    assert!(
+        summary.total >= 6,
+        "expected >=6 projects, got {}",
+        summary.total
+    );
 }

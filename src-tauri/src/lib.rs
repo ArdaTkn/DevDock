@@ -12,7 +12,9 @@ use std::sync::Mutex;
 use tauri::Manager;
 
 pub fn run() {
-    tracing_subscriber::fmt().with_max_level(tracing::Level::INFO).init();
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .init();
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
@@ -30,7 +32,9 @@ pub fn run() {
                 if let Some(home) = std::env::home_dir() {
                     let home_str = home.to_string_lossy().to_string();
                     let name = crate::fs::path_name(&home);
-                    let _ = storage::project_repo::ProjectRepo::add_scan_location(&db, &home_str, &name);
+                    let _ = storage::project_repo::ProjectRepo::add_scan_location(
+                        &db, &home_str, &name,
+                    );
                 }
             }
 
