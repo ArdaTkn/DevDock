@@ -1,5 +1,7 @@
 use crate::error::{Error, Result};
-use std::path::{Path, PathBuf};
+use std::path::Path;
+#[cfg(target_os = "macos")]
+use std::path::PathBuf;
 use std::process::Command;
 
 /// Cross-platform "open this project in an editor / terminal / file manager".
