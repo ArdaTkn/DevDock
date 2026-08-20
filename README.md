@@ -46,13 +46,17 @@ No account. No cloud. No configuration-heavy setup.
 
 ## Features
 
-**Phase 2 (current — MVP spine, working):**
+**Core MVP & Productivity (v0.1 & v0.2 working):**
 
 - ✅ Scan user-selected directories (add/remove anytime)
 - ✅ Automatic project detection — Git, Node, Python, Rust, Go, Flutter,
   .NET, Docker, Unity, Java (extensible detector architecture)
 - ✅ Read-only Git metadata — branch, clean/dirty, staged/modified/untracked
   counts, last commit, remote URL
+- ✅ Command Palette (`⌘K` / `Ctrl+K`) for fast project search & quick actions
+- ✅ Real-time FileSystem Watcher (`notify` crate) for live background updates
+- ✅ Recently Opened projects quick launcher strip
+- ✅ Configurable Code Editor & Terminal preferences (VS Code, Cursor, Zed, Windsurf, etc.)
 - ✅ Technology badges + search + filter + sort (recent, name, dirty, path)
 - ✅ Favorites (pinned to top)
 - ✅ Open in Editor / Open in Terminal / Show in Finder
@@ -62,8 +66,7 @@ No account. No cloud. No configuration-heavy setup.
 
 **Roadmap:**
 
-- v0.2 — recent projects, command palette, filesystem watching
-- v0.3 — running processes, port detection, Docker containers, project health
+- v0.3 *(next up)* — running processes, listening port detection (`localhost:3000`, `5173`), Docker containers, project health checks
 - v0.4 — GitHub integration, tags, notes, configurable project commands
 - v0.5+ — opt-in AI (local / OpenAI / Anthropic / Google — never on by default)
 
