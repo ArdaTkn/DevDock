@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /**
- * DevDock CLI Launcher
- * Usage: devdock
+ * DevDock CLI — Your local development command center
+ * Usage: devdock [command] [options]
  */
 
-import { spawn } from "node:child_process";
+import { spawn, execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(__dirname, "..");
@@ -17,14 +17,172 @@ const appPath = join(
   "src-tauri/target/release/bundle/macos/DevDock.app"
 );
 
-if (process.platform === "darwin") {
-  if (existsSync(appPath)) {
-    spawn("open", ["-a", appPath], { stdio: "inherit", detached: true });
-  } else {
-    spawn("open", ["-a", "DevDock"], { stdio: "inherit", detached: true });
+const args = process.argv.slice(2);
+const command = args[0] ? args[0].toLowerCase() : "";
+
+// Colors for terminal output
+const cyan = (text) => `\x1b[36m${text}\x1b[0m`;
+const green = (text) => `\x1b[32m${text}\x1b[0m`;
+const yellow = (text) => `\x1b[33m${text}\x1b[0m`;
+const bold = (text) => `\x1b[1m${text}\x1b[0m`;
+const dim = (text) => `\x1b[2m${text}\x1b[0m`;
+
+function getVersion() {
+  try {
+    const pkg = JSON.parse(readFileSync(join(rootDir, "package.json"), "utf8"));
+    return pkg.version || "0.5.0";
+  } catch {
+    return "0.5.0";
   }
-} else if (process.platform === "win32") {
-  spawn("cmd", ["/c", "start", "DevDock"], { stdio: "inherit", detached: true });
-} else {
-  spawn("devdock", [], { stdio: "inherit", detached: true });
+}
+
+function printHelp() {
+  console.log(`
+${bold(cyan("⚓ DevDock CLI"))} — ${dim("Your Local Development Command Center")}
+${dim("Version v" + getVersion())}
+
+${bold("USAGE:")}
+  $ ${green("devdock")} [command] [options]
+
+${bold("COMMANDS:")}
+  ${green("devdock")}                 Launch the DevDock GUI desktop app
+  ${green("devdock scan")} [path]        Scan current directory or specified path for projects
+  ${green("devdock ports")}              List active dev server listening ports (3000, 5173, 8000...)
+  ${green("devdock update")}             Pull latest DevDock code from GitHub & rebuild
+  ${green("devdock status")}             Show DevDock version, database path, and system info
+  ${green("devdock help")}               Show this CLI help menu
+  ${green("devdock --version")}         Show version number
+
+${bold("EXAMPLES:")}
+  $ ${green("devdock")}                 # Launch DevDock app
+  $ ${green("devdock scan ~/Projects")} # Scan ~/Projects folder
+  $ ${green("devdock ports")}           # Check running dev servers
+  $ ${green("devdock update")}          # Update DevDock to latest version
+`);
+}
+
+function launchApp() {
+  console.log(`${bold(cyan("⚓ Launching DevDock..."))}`);
+  if (process.platform === "darwin") {
+    if (existsSync(appPath)) {
+      spawn("open", ["-a", appPath], { stdio: "ignore", detached: true }).unref();
+    } else {
+      spawn("open", ["-a", "DevDock"], { stdio: "ignore", detached: true }).unref();
+    }
+  } else if (process.platform === "win32") {
+    spawn("cmd", ["/c", "start", "DevDock"], { stdio: "ignore", detached: true }).unref();
+  } else {
+    spawn("devdock", [], { stdio: "ignore", detached: true }).unref();
+  }
+}
+
+function handleUpdate() {
+  console.log(`${bold(cyan("⚓ Updating DevDock to latest version..."))}`);
+  try {
+    console.log(dim("1. Pulling latest code from GitHub..."));
+    execSync("git pull origin main", { cwd: rootDir, stdio: "inherit" });
+
+    console.log(dim("2. Installing dependencies..."));
+    execSync("npm install", { cwd: rootDir, stdio: "inherit" });
+
+    console.log(dim("3. Linking CLI command globally..."));
+    execSync("npm link", { cwd: rootDir, stdio: "inherit" });
+
+    console.log(`\n${green("✅ DevDock successfully updated to v" + getVersion() + "!")}`);
+  } catch (err) {
+    console.error(`\x1b[31m❌ Update failed:\x1b[0m`, err.message);
+  }
+}
+
+function handlePorts() {
+  console.log(`${bold(cyan("🟢 Scanning active dev server listening ports..."))}\n`);
+  try {
+    let output = "";
+    if (process.platform === "darwin" || process.platform === "linux") {
+      output = execSync("lsof -i -P -n | grep LISTEN", { encoding: "utf8" });
+    } else {
+      output = execSync("netstat -ano | findstr LISTEN", { encoding: "utf8" });
+    }
+
+    const lines = output.split("\n");
+    const devPorts = [3000, 3001, 5173, 5174, 8000, 8080, 5432, 6379, 27017, 1420, 11434];
+    const found = [];
+
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const isDev = devPorts.some((p) => line.includes(":" + p) || line.includes("." + p));
+      if (isDev && !line.includes("Spotify") && !line.includes("Discord")) {
+        found.push(line);
+      }
+    }
+
+    if (found.length > 0) {
+      console.log(bold("Active Dev Servers:"));
+      found.forEach((l) => console.log("  " + green("● ") + l));
+    } else {
+      console.log(dim("No common dev server ports (3000, 5173, 8000...) active right now."));
+    }
+  } catch {
+    console.log(dim("No active dev server ports detected."));
+  }
+}
+
+function handleStatus() {
+  const dbPath = join(process.env.HOME || "", ".devdock", "devdock.db");
+  console.log(`
+${bold(cyan("⚓ DevDock Status & System Info"))}
+  ${bold("Version:")}     v${getVersion()}
+  ${bold("Platform:")}    ${process.platform} (${process.arch})
+  ${bold("Database:")}    ${dbPath} (${existsSync(dbPath) ? green("Active") : yellow("Not created yet")})
+  ${bold("App Path:")}    ${appPath} (${existsSync(appPath) ? green("Built") : dim("Not built")})
+`);
+}
+
+function handleScan(targetPath) {
+  const p = targetPath || process.cwd();
+  console.log(`${bold(cyan("🔍 Scanning path:"))} ${bold(p)}\n`);
+  console.log(dim("Launching DevDock app to focus scan on this directory..."));
+  launchApp();
+}
+
+// Router
+switch (command) {
+  case "help":
+  case "-h":
+  case "--help":
+    printHelp();
+    break;
+
+  case "version":
+  case "-v":
+  case "--version":
+    console.log(`DevDock v${getVersion()}`);
+    break;
+
+  case "update":
+    handleUpdate();
+    break;
+
+  case "ports":
+  case "ps":
+    handlePorts();
+    break;
+
+  case "status":
+  case "info":
+    handleStatus();
+    break;
+
+  case "scan":
+    handleScan(args[1]);
+    break;
+
+  case "":
+    launchApp();
+    break;
+
+  default:
+    console.log(`Unknown command: ${yellow(command)}`);
+    printHelp();
+    break;
 }

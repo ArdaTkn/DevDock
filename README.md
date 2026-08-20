@@ -95,6 +95,28 @@ cd DevDock && npm install && npm link
 devdock
 ```
 
+### 💻 DevDock CLI Subcommands
+
+```bash
+# Launch DevDock GUI App
+devdock
+
+# Check active listening dev ports (3000, 5173, 8000...)
+devdock ports
+
+# Pull latest code from GitHub & rebuild automatically
+devdock update
+
+# Show DevDock system status & database info
+devdock status
+
+# Scan specific folder
+devdock scan ~/Projects
+
+# Print CLI help
+devdock help
+```
+
 > [!TIP]
 > Once linked with `npm link`, you never need to navigate to the repo directory or run complex commands again. Just type `devdock` in any shell (`zsh`, `bash`, `fish`) to launch your command center!
 
