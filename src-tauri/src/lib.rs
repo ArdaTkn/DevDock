@@ -40,8 +40,8 @@ pub fn run() {
             }
 
             // Start watcher on all scan locations
-            let locs = storage::project_repo::ProjectRepo::list_scan_locations(&db)
-                .unwrap_or_default();
+            let locs =
+                storage::project_repo::ProjectRepo::list_scan_locations(&db).unwrap_or_default();
             let scan_paths: Vec<std::path::PathBuf> = locs
                 .into_iter()
                 .map(|l| std::path::PathBuf::from(l.path))

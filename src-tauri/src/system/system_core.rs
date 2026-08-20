@@ -41,7 +41,12 @@ impl SystemActions {
                 .join(format!("{app}.app"))
                 .is_dir()
             || std::env::var("HOME")
-                .map(|h| std::path::Path::new(&h).join("Applications").join(format!("{app}.app")).is_dir())
+                .map(|h| {
+                    std::path::Path::new(&h)
+                        .join("Applications")
+                        .join(format!("{app}.app"))
+                        .is_dir()
+                })
                 .unwrap_or(false)
     }
 
