@@ -11,6 +11,7 @@ use tauri::{AppHandle, Emitter, Manager, State};
 pub struct AppState {
     pub db: AppDb,
     pub scan_handle: Mutex<Option<Arc<crate::discovery::scanner::ScanHandle>>>,
+    pub watcher: Mutex<Option<Arc<crate::watch::ProjectWatcher>>>,
 }
 
 fn state(app: &AppHandle) -> State<'_, AppState> {
@@ -162,13 +163,37 @@ pub fn open_project_editor(app: AppHandle, path: String) -> Result<(), ErrorDto>
     if let Some(id) = find_project_id(&state(&app).db, &path)? {
         let _ = ProjectRepo::touch_recent(&state(&app).db, id);
     }
-    SystemActions::open_editor(&PathBuf::from(path)).map_err(Into::into)
+    let pref = state(&app)
+        .db
+        .get_setting("editor")?
+        .filter(|s| !s.is_empty());
+    SystemActions::open_editor(&PathBuf::from(path), pref.as_deref()).map_err(Into::into)
+}
+
+#[tauri::command]
+pub fn list_editors(_app: AppHandle) -> Result<Vec<String>, ErrorDto> {
+    Ok(SystemActions::detect_editors())
+}
+
+#[tauri::command]
+pub fn get_editor_pref(app: AppHandle) -> Result<Option<String>, ErrorDto> {
+    Ok(state(&app)
+        .db
+        .get_setting("editor")?
+        .filter(|s| !s.is_empty()))
+}
+
+#[tauri::command]
+pub fn set_editor_pref(app: AppHandle, pref: Option<String>) -> Result<(), ErrorDto> {
+    let value = pref.unwrap_or_default();
+    state(&app).db.set_setting("editor", &value)?;
+    Ok(())
 }
 
 #[tauri::command]
 pub fn detect_editor(app: AppHandle) -> Result<Option<String>, ErrorDto> {
     let _ = app;
-    Ok(SystemActions::detect_editor().map(|s| s.to_string()))
+    Ok(SystemActions::detect_editors().first().cloned())
 }
 
 fn find_project_id(db: &AppDb, path: &str) -> crate::error::Result<Option<i64>> {

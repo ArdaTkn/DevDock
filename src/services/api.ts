@@ -49,6 +49,15 @@ export const api = {
   detectEditor: () =>
     invoke<string | null>("detect_editor"),
 
+  listEditors: () =>
+    invoke<string[]>("list_editors"),
+
+  getEditorPref: () =>
+    invoke<string | null>("get_editor_pref"),
+
+  setEditorPref: (pref: string) =>
+    invoke<void>("set_editor_pref", { pref }),
+
   listTerminals: () =>
     invoke<string[]>("list_terminals"),
 

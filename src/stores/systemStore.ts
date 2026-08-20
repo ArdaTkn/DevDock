@@ -3,12 +3,17 @@ import { api } from "../services/api";
 
 interface SystemState {
   editor: string | null;
+  editors: string[];
+  editorPref: string;
   /** Installed terminals detected on the system (empty = not detected). */
   terminals: string[];
   /** User-chosen terminal; "" = "System default (auto)". */
   terminalPref: string;
   loading: boolean;
   detectEditor: () => Promise<void>;
+  loadEditors: () => Promise<void>;
+  loadEditorPref: () => Promise<void>;
+  setEditor: (e: string) => Promise<void>;
   loadTerminals: () => Promise<void>;
   loadTerminalPref: () => Promise<void>;
   setTerminal: (t: string) => Promise<void>;
@@ -16,6 +21,8 @@ interface SystemState {
 
 export const useSystemStore = create<SystemState>((set) => ({
   editor: null,
+  editors: [],
+  editorPref: "",
   terminals: [],
   terminalPref: "",
   loading: false,
@@ -24,6 +31,21 @@ export const useSystemStore = create<SystemState>((set) => ({
     set({ loading: true });
     const editor = await api.detectEditor();
     set({ editor, loading: false });
+  },
+
+  loadEditors: async () => {
+    const editors = await api.listEditors();
+    set({ editors });
+  },
+
+  loadEditorPref: async () => {
+    const pref = await api.getEditorPref();
+    set({ editorPref: pref ?? "" });
+  },
+
+  setEditor: async (e) => {
+    await api.setEditorPref(e);
+    set({ editorPref: e });
   },
 
   loadTerminals: async () => {

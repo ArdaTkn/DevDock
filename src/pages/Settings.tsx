@@ -4,13 +4,25 @@ import { useSystemStore } from "../stores/systemStore";
 
 export function Settings() {
   const { locations, error, load, addLocation, removeLocation } = useProjectsStore();
-  const { terminals, terminalPref, loadTerminals, loadTerminalPref, setTerminal } =
-    useSystemStore();
+  const {
+    terminals,
+    terminalPref,
+    editors,
+    editorPref,
+    loadTerminals,
+    loadTerminalPref,
+    setTerminal,
+    loadEditors,
+    loadEditorPref,
+    setEditor,
+  } = useSystemStore();
   const [dir, setDir] = useState("");
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     void load();
+    void loadEditors();
+    void loadEditorPref();
     void loadTerminals();
     void loadTerminalPref();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,6 +74,32 @@ export function Settings() {
             Add Folder
           </button>
         </div>
+      </section>
+
+      <section className="panel">
+        <h2>Code Editor</h2>
+        <p className="muted">
+          Choose which editor DevDock launches when you click Open Editor. Only
+          editors detected on this system are listed.
+        </p>
+        <select
+          className="select"
+          value={editorPref}
+          onChange={(e) => void setEditor(e.target.value)}
+          aria-label="editor"
+        >
+          <option value="">System default (auto-detect)</option>
+          {editors.map((e) => (
+            <option key={e} value={e}>
+              {e}
+            </option>
+          ))}
+        </select>
+        {editors.length === 0 && (
+          <p className="muted small">
+            No supported editors detected — DevDock uses the system default opener.
+          </p>
+        )}
       </section>
 
       <section className="panel">

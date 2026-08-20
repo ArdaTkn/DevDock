@@ -6,8 +6,9 @@ pub mod git;
 pub mod models;
 pub mod storage;
 pub mod system;
+pub mod watch;
 
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use tauri::Manager;
 
@@ -38,9 +39,19 @@ pub fn run() {
                 }
             }
 
+            // Start watcher on all scan locations
+            let locs = storage::project_repo::ProjectRepo::list_scan_locations(&db)
+                .unwrap_or_default();
+            let scan_paths: Vec<std::path::PathBuf> = locs
+                .into_iter()
+                .map(|l| std::path::PathBuf::from(l.path))
+                .collect();
+            let watcher = crate::watch::ProjectWatcher::new(app.handle().clone(), scan_paths).ok();
+
             app.manage(commands::AppState {
                 db,
                 scan_handle: Mutex::new(None),
+                watcher: Mutex::new(watcher.map(Arc::new)),
             });
             Ok(())
         })
@@ -58,6 +69,9 @@ pub fn run() {
             commands::open_project_terminal,
             commands::open_project_editor,
             commands::detect_editor,
+            commands::list_editors,
+            commands::get_editor_pref,
+            commands::set_editor_pref,
             commands::list_terminals,
             commands::get_terminal_pref,
             commands::set_terminal_pref,

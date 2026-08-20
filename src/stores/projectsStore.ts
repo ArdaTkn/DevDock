@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { listen } from "@tauri-apps/api/event";
 import type { Project, ScanLocation } from "../types";
 import { api } from "../services/api";
 
@@ -10,6 +11,7 @@ export type SortKey =
 
 interface ProjectsState {
   projects: Project[];
+  recentProjects: Project[];
   locations: ScanLocation[];
   loading: boolean;
   search: string;
@@ -18,6 +20,8 @@ interface ProjectsState {
   error: string | null;
   load: () => Promise<void>;
   refresh: () => Promise<void>;
+  loadRecent: () => Promise<void>;
+  listenWatcher: () => Promise<void>;
   setSearch: (s: string) => void;
   setTechFilter: (t: string | null) => void;
   setSort: (s: SortKey) => void;
@@ -25,6 +29,8 @@ interface ProjectsState {
   addLocation: (path: string) => Promise<void>;
   removeLocation: (id: number) => Promise<void>;
 }
+
+let watcherUnsub: (() => void) | null = null;
 
 export type ProjectWithKey = Project; // placeholder for future memoisation
 
@@ -35,6 +41,7 @@ async function loadProjects(): Promise<Project[]> {
 
 export const useProjectsStore = create<ProjectsState>((set, get) => ({
   projects: [],
+  recentProjects: [],
   locations: [],
   loading: false,
   search: "",
@@ -42,14 +49,27 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   sort: "recent",
   error: null,
 
+  listenWatcher: async () => {
+    if (watcherUnsub) return;
+    try {
+      const unsub = await listen("fs-change", () => {
+        void get().refresh();
+      });
+      watcherUnsub = unsub;
+    } catch {
+      // Ignored in non-Tauri browser dev mode
+    }
+  },
+
   load: async () => {
     set({ loading: true, error: null });
     try {
-      const [projects, locations] = await Promise.all([
+      const [projects, locations, recentProjects] = await Promise.all([
         loadProjects(),
         api.listScanLocations(),
+        api.listRecent(5),
       ]);
-      set({ projects, locations, loading: false });
+      set({ projects, locations, recentProjects, loading: false });
     } catch (e) {
       set({ error: String(e), loading: false });
     }
@@ -57,8 +77,20 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
   refresh: async () => {
     try {
-      const projects = await loadProjects();
-      set({ projects });
+      const [projects, recentProjects] = await Promise.all([
+        loadProjects(),
+        api.listRecent(5),
+      ]);
+      set({ projects, recentProjects });
+    } catch (e) {
+      set({ error: String(e) });
+    }
+  },
+
+  loadRecent: async () => {
+    try {
+      const recentProjects = await api.listRecent(5);
+      set({ recentProjects });
     } catch (e) {
       set({ error: String(e) });
     }

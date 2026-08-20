@@ -3,10 +3,12 @@ import { ProjectCard } from "../components/ProjectCard";
 import { useProjectsStore, SortKey } from "../stores/projectsStore";
 import { useScanStore } from "../stores/scanStore";
 import { allTechs } from "../lib/format";
+import { api } from "../services/api";
 
 export function Dashboard() {
   const {
     projects,
+    recentProjects,
     loading,
     error,
     search,
@@ -24,6 +26,7 @@ export function Dashboard() {
     let cancelled = false;
     void (async () => {
       useScanStore.getState().listen();
+      void useProjectsStore.getState().listenWatcher();
       await load();
       if (cancelled) return;
       await useScanStore.getState().ensureScan();
@@ -196,6 +199,23 @@ export function Dashboard() {
             </button>
           ))}
         </div>
+      )}
+
+      {recentProjects.length > 0 && !search && techFilter === null && (
+        <section className="recents-section">
+          <div className="recents-header">
+            <span className="recents-title">Recently Opened</span>
+          </div>
+          <div className="recents-row">
+            {recentProjects.map((p) => (
+              <div key={`recent-${p.id}`} className="recent-chip" onClick={() => void api.openEditor(p.path)}>
+                <span className="recent-icon">📁</span>
+                <span className="recent-name">{p.name}</span>
+                <span className="recent-act">Editor ↵</span>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       <div className="card-grid">

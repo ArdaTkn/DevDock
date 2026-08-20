@@ -9,13 +9,20 @@ use std::process::{Child, Command};
 /// app feel frozen/crashed. Returns as soon as the child is forked.
 pub struct SystemActions;
 
-/// On macOS, "VS Code" is the canonical editor (per product decision).
+/// Recognised editors on macOS.
 #[cfg(target_os = "macos")]
-const MACOS_EDITOR_BUNDLE: &str = "Visual Studio Code";
+const EDITORS: &[&str] = &[
+    "Visual Studio Code",
+    "Cursor",
+    "Zed",
+    "Windsurf",
+    "Sublime Text",
+    "WebStorm",
+    "Android Studio",
+    "Xcode",
+];
 
-/// Recognised terminals on macOS. macOS has no true "default terminal" system
-/// setting (the OS default is always Terminal.app), so we *detect* whichever
-/// of these is installed and use it, falling back to Terminal.app if none is.
+/// Recognised terminals on macOS.
 #[cfg(target_os = "macos")]
 const TERMINALS: &[&str] = &["iTerm", "Warp", "Ghostty", "Hyper", "Alacritty", "Kitty"];
 
@@ -30,6 +37,12 @@ impl SystemActions {
         std::path::Path::new("/Applications")
             .join(format!("{app}.app"))
             .is_dir()
+            || std::path::Path::new("/System/Applications")
+                .join(format!("{app}.app"))
+                .is_dir()
+            || std::env::var("HOME")
+                .map(|h| std::path::Path::new(&h).join("Applications").join(format!("{app}.app")).is_dir())
+                .unwrap_or(false)
     }
 
     /// Opens the project folder in the system file manager.
@@ -68,21 +81,33 @@ impl SystemActions {
         c
     }
 
-    /// Opens the project in VS Code (the canonical editor).
-    pub fn open_editor(path: &Path) -> Result<()> {
+    /// Opens the project in preferred or detected editor.
+    pub fn open_editor(path: &Path, preferred: Option<&str>) -> Result<()> {
         #[cfg(target_os = "macos")]
         {
-            if !Self::bundle_exists(MACOS_EDITOR_BUNDLE) {
-                return Err(Error::EditorNotFound);
+            let app_name = match preferred {
+                Some(p) if Self::bundle_exists(p) => Some(p),
+                _ => EDITORS.iter().copied().find(|e| Self::bundle_exists(e)),
+            };
+
+            if let Some(editor) = app_name {
+                let mut cmd = Command::new("open");
+                cmd.args(["-a", editor]).arg(path);
+                Self::spawn(&mut cmd)
+                    .map(|_| ())
+                    .map_err(|_| Error::EditorNotFound)
+            } else {
+                // Fallback to default system handler for folder
+                let mut cmd = Command::new("open");
+                cmd.arg(path);
+                Self::spawn(&mut cmd)
+                    .map(|_| ())
+                    .map_err(|_| Error::EditorNotFound)
             }
-            let mut cmd = Command::new("open");
-            cmd.args(["-a", MACOS_EDITOR_BUNDLE]).arg(path);
-            Self::spawn(&mut cmd)
-                .map(|_| ())
-                .map_err(|_| Error::EditorNotFound)
         }
         #[cfg(not(target_os = "macos"))]
         {
+            let _ = preferred;
             let mut cmd = Command::new("code");
             cmd.arg(path);
             Self::spawn(&mut cmd)
@@ -91,21 +116,24 @@ impl SystemActions {
         }
     }
 
-    /// Returns the display name of the detected editor, if any (used in UI).
-    pub fn detect_editor() -> Option<&'static str> {
+    /// Returns the display names of detected installed editors.
+    pub fn detect_editors() -> Vec<String> {
         #[cfg(target_os = "macos")]
         {
-            if Self::bundle_exists(MACOS_EDITOR_BUNDLE) {
-                return Some("VS Code");
-            }
+            EDITORS
+                .iter()
+                .filter(|n| Self::bundle_exists(n))
+                .map(|s| s.to_string())
+                .collect()
         }
         #[cfg(not(target_os = "macos"))]
         {
             if Self::binary_exists("code") {
-                return Some("VS Code");
+                vec!["VS Code".to_string()]
+            } else {
+                vec![]
             }
         }
-        None
     }
 
     /// Returns the terminal bundles/CLIs that are actually installed.
