@@ -84,7 +84,7 @@ Without DevDock, answering simple questions requires constant terminal navigatio
 
 ## ⚡ Quick Start & Installation
 
-Launch DevDock instantly from any terminal window just like `agy`:
+Launch DevDock instantly from any terminal window :
 
 ```bash
 # 1. Clone the repository & link the CLI globally
