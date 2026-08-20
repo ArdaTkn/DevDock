@@ -39,13 +39,23 @@ pub fn run() {
                 }
             }
 
-            // Start watcher on all scan locations
+            // Start watcher on discovered project directories + scan locations
+            let mut scan_paths: Vec<std::path::PathBuf> = Vec::new();
+            if let Ok(projects) = storage::project_repo::ProjectRepo::list_projects(&db, None) {
+                for p in projects {
+                    scan_paths.push(std::path::PathBuf::from(p.path));
+                }
+            }
+
             let locs =
                 storage::project_repo::ProjectRepo::list_scan_locations(&db).unwrap_or_default();
-            let scan_paths: Vec<std::path::PathBuf> = locs
-                .into_iter()
-                .map(|l| std::path::PathBuf::from(l.path))
-                .collect();
+            for l in locs {
+                let p = std::path::PathBuf::from(l.path);
+                if !scan_paths.contains(&p) {
+                    scan_paths.push(p);
+                }
+            }
+
             let watcher = crate::watch::ProjectWatcher::new(app.handle().clone(), scan_paths).ok();
 
             app.manage(commands::AppState {

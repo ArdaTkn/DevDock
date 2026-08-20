@@ -30,9 +30,24 @@ impl ProjectWatcher {
         })
         .map_err(|e| crate::error::Error::Other(format!("Failed to create watcher: {e}")))?;
 
+        let home_dir = std::env::home_dir();
+
         for p in scan_paths {
-            if p.is_dir() {
-                let _ = watcher.watch(&p, RecursiveMode::Recursive);
+            if !p.is_dir() {
+                continue;
+            }
+
+            // Safety guard: Never recursively watch the root home directory ~ directly,
+            // as watching ~ recursively exhausts OS FSEvents/file descriptors and hangs the OS.
+            let is_home = home_dir.as_ref().map(|h| h == &p).unwrap_or(false);
+            let mode = if is_home {
+                RecursiveMode::NonRecursive
+            } else {
+                RecursiveMode::Recursive
+            };
+
+            if let Err(err) = watcher.watch(&p, mode) {
+                tracing::warn!("Failed to watch directory {}: {err}", p.display());
             }
         }
 
