@@ -1,224 +1,184 @@
-# DevDock
+<div align="center">
 
-**Your local development command center.**
+# ⚓ DevDock
 
-DevDock automatically discovers the projects on your computer
-and gives you one place to understand, open, and manage them.
+### **Your Local Development Command Center**
 
-> Developers accumulate many coding projects on their machines, but there is no
-> single lightweight place that automatically **discovers**, **understands**,
-> **monitors**, and **launches** those projects. DevDock is that place — it runs
-> locally on your own machine, reads nothing but metadata, and never uploads
-> your source code anywhere.
+*Automatically discover, understand, monitor, and launch every coding project on your computer — 100% locally & privately.*
 
-![Status](https://img.shields.io/badge/status-alpha-6ee7b7)
-![Platform](https://img.shields.io/badge/macOS-Windows-Linux-lightgrey)
+[![Version](https://img.shields.io/badge/version-v0.4.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock/releases)
+[![License](https://img.shields.io/badge/license-MIT-6ee7b7.svg?style=for-the-badge)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-9333ea.svg?style=for-the-badge)](https://github.com/ArdaTkn/DevDock/releases)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/ArdaTkn/DevDock/release.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/ArdaTkn/DevDock/actions)
 
----
-
-## The problem
-
-You have Git repositories, Node projects, Python scripts, Flutter apps, Rust
-crates, Docker compose stacks — spread across `~/Projects`, `~/Developer`,
-`~/Code`, your Documents folder, sometimes forgotten in a corner of your disk.
-
-Open DevDock and you instantly know:
-
-- what projects exist on your machine and where
-- which technology each one uses
-- which Git branch each is on, and whether it's clean or dirty
-- what's been modified recently
-- how to open it in your editor, terminal, or file manager
-
-## The core experience
-
-```
-Install DevDock → pick ~/Projects → DevDock scans
-→ "We found 42 projects: 18 Node, 7 Python, 5 Flutter…"
-→ click a project → see Git + technology + health
-→ [Open Editor] [Open Terminal]
-→ start working
-```
-
-No account. No cloud. No configuration-heavy setup.
+<p align="center">
+  <a href="#-the-problem">The Problem</a> •
+  <a href="#-core-features">Features</a> •
+  <a href="#-quick-start">Quick Start</a> •
+  <a href="#-architecture">Architecture</a> •
+  <a href="#-security--privacy">Privacy</a> •
+  <a href="#-roadmap">Roadmap</a> •
+  <a href="#-contributing">Contributing</a>
+</p>
 
 ---
 
-## Features
+</div>
 
-**Core Features (v0.1, v0.2, v0.3 & v0.4 active):**
-
-- ✅ **GitHub Integration** — automatically parses GitHub remote URLs (`owner/repo`), providing 1-click browser quick actions for Repository, Issues, and Pull Requests
-- ✅ **Project Tags & Categories** — custom tag chips (`open-source`, `client`, `side-project`) stored locally in SQLite
-- ✅ **Project Quick Notes & Reminders** — auto-saved markdown notes per project for tracking TODOs and reminders
-- ✅ **Configurable Custom Commands** — user-defined custom shell commands (`cargo watch`, `docker compose up`, etc.) executed with 1 click in your preferred terminal
-- ✅ **Smart Dev Port & Live Server Scanner** — automatically scans active listening TCP ports (`localhost:3000`, `5173`, `8000`, `5432`, `6379`, etc.), filters out non-dev background noise (Spotify, Discord, system daemons), and renders a responsive glassmorphism grid with live pulsing dots, PID badges, and 1-click browser launchers
-- ✅ **Docker Container Inspector** — detects active/recent Docker containers, statuses, images, and port mappings
-- ✅ **Deterministic Project Health Audit** — scores project health (0-100), checks dependency presence (`node_modules`, `.venv`), README docs, and Git cleanliness
-- ✅ **Custom Project Script Launcher** — detects package/Cargo/Makefile scripts (`npm run dev`, `cargo run`, `make dev`) and runs them in your terminal with 1 click
-- ✅ **Scan user-selected directories** (add/remove anytime)
-- ✅ **Automatic project detection** — Git, Node, Python, Rust, Go, Flutter, .NET, Docker, Unity, Java (extensible detector architecture)
-- ✅ **Read-only Git metadata** — branch, clean/dirty, staged/modified/untracked counts, last commit, remote URL
-- ✅ **Command Palette (`⌘K` / `Ctrl+K`)** for fast project search & quick actions
-- ✅ **Real-time FileSystem Watcher (`notify` crate)** for live background updates
-- ✅ **Recently Opened projects** quick launcher strip
-- ✅ **Configurable Code Editor & Terminal preferences** (VS Code, Cursor, Zed, Windsurf, etc.)
-- ✅ **Technology badges + search + filter + sort** (recent, name, dirty, path)
-- ✅ **Favorites** (pinned to top)
-- ✅ **Open in Editor / Open in Terminal / Show in Finder**
-- ✅ **SQLite storage** (metadata + paths only — never source code)
-- ✅ **Local-first, privacy-first, no telemetry**
-- ✅ **9 passing integration tests** (detectors + git + end-to-end scan)
-
-**Roadmap:**
-
-- v0.5+ — opt-in AI assistance (local / OpenAI / Anthropic / Google — never on by default)
+> [!NOTE]
+> **DevDock** runs entirely on your own machine. It reads only filesystem metadata (directory trees, marker files, Git porcelain) and **never uploads your source code anywhere**.
 
 ---
 
-## Screenshots
+## 🎯 The Problem
 
-*Screenshots will be added when the desktop UI is in its polished state.
-The scanner + dashboard are functional now; visual polish is in progress.*
+Developers accumulate dozens or hundreds of coding projects across `~/Projects`, `~/Developer`, `~/Code`, `Documents`, and hidden corners of their disks. 
 
----
+Without DevDock, answering simple questions requires constant terminal navigation:
+- *Where is that old Flutter app or Rust CLI script I wrote last year?*
+- *Which local ports (`localhost:3000`, `5173`, `8000`) are active right now?*
+- *Do I have uncommitted Git changes before pushing?*
+- *Is this project missing `node_modules` or `.venv` dependencies?*
 
-## Supported platforms
-
-- macOS (primary dev target — built on macOS)
-- Windows (architecture-ready; CI builds)
-- Linux (architecture-ready; CI builds)
-
-All platform-specific work is behind small traits (process/port/editor/terminal
-detection), so cross-platform behaviour is designed in from day one.
+**DevDock is your local development command center.** It automatically discovers your projects, analyzes their tech stack, monitors active dev servers, audits health, and lets you open them in your preferred editor or terminal with a single click.
 
 ---
 
-## Installation
+## ✨ Core Features
 
-> Alpha. Build from source below, or grab a prebuilt installer from the
-> [Releases](https://github.com/ArdaTkn/DevDock/releases) page once a release is cut
-> (CI builds macOS `.dmg`, Windows `.msi`, and Linux `.AppImage`/`.deb`).
+### 🟢 Active Dev Server & Port Monitoring
+- **Smart Listening Port Scanner:** Automatically detects active TCP dev servers (`localhost:3000`, `5173`, `8000`, `5432`, `6379`, etc.).
+- **Noise Filter:** Intelligently filters out background desktop applications (Spotify, Discord, Steam, Dropbox, system daemons).
+- **Interactive Dev Grid:** Glassmorphism cards with pulsing status dots, PID badges, and 1-click browser launchers.
 
-### Prerequisites
+### 🔍 Magic Project Discovery & Detector Engine
+- **Extensible Detector Architecture:** Instant recognition for **Git, Node.js, Python, Rust, Go, Flutter, .NET, Docker, Unity, and Java**.
+- **Read-Only Git Metadata:** Shows current branch, clean/dirty status, uncommitted file counts (`modified`, `staged`, `untracked`), last commit message, and remote URL.
 
-- **Rust** toolchain (stable) — e.g. via `rustup` or Homebrew
-- **Node.js 18+** and npm
-- On macOS: Xcode Command Line Tools (`xcode-select --install`)
+### 🐙 GitHub Integration
+- **Automatic Repository Parsing:** Resolves `owner/repo` from remote URLs.
+- **1-Click Quick Actions:** Direct links to **Repository**, **Issues (`/issues`)**, and **Pull Requests (`/pulls`)**.
 
-### Build & run (development)
+### 🏥 Project Health Audit
+- **Deterministic Health Scoring (0–100):** Evaluates missing dependencies (`node_modules`, `.venv`), documentation presence (`README.md`), and Git cleanliness.
+- **Visual Health Tags & Indicators:** Color-coded badges (`🟢 Ready`, `🟡 Mod`, `🔴 Unhealthy`) on project cards and detail views.
 
+### ⚡ Script Launcher & Custom Commands
+- **Detected Package Scripts:** Reads `package.json` (`npm run dev`), `Cargo.toml` (`cargo run`), and `Makefile` scripts.
+- **Custom Shell Commands:** Add your own project commands (`cargo watch`, `docker compose up`) saved locally in SQLite and trigger them in 1 click.
+
+### 🏷️ Tags, Notes & Organization
+- **Custom Project Tags:** Categorize projects (`open-source`, `client-work`, `side-project`).
+- **Auto-Saved Markdown Notes:** Keep project TODOs, notes, and reminders saved per project in local SQLite.
+- **Command Palette (`⌘K` / `Ctrl+K`):** Global instant search for projects, actions, and settings.
+- **Recently Opened Strip:** Quick launcher for recently opened projects.
+- **Configurable Editors & Terminals:** Auto-detects VS Code, Cursor, Zed, Windsurf, Sublime, iTerm2, Kitty, Alacritty, Warp, Terminal.app, etc.
+
+---
+
+## ⚡ Quick Start
+
+### Installation
+
+Download prebuilt binary installers for your OS from the **[Releases](https://github.com/ArdaTkn/DevDock/releases)** page:
+
+| OS | Package Format | Direct Release Link |
+| :--- | :--- | :--- |
+| **macOS** (Apple Silicon / Intel) | `.dmg` | [Download macOS Installer](https://github.com/ArdaTkn/DevDock/releases) |
+| **Windows** (x64) | `.msi` / `.exe` | [Download Windows Installer](https://github.com/ArdaTkn/DevDock/releases) |
+| **Linux** (Ubuntu / Debian / AppImage) | `.AppImage` / `.deb` | [Download Linux Installer](https://github.com/ArdaTkn/DevDock/releases) |
+
+> [!TIP]
+> On macOS, because binaries are self-signed, right-click the app → select **Open**, or run:
+> ```bash
+> xattr -dr com.apple.quarantine /Applications/DevDock.app
+> ```
+
+---
+
+### Building from Source
+
+#### Prerequisites
+- **Rust Toolchain** (1.75+) — via `rustup`
+- **Node.js** (18+) and `npm`
+
+#### Step-by-Step
 ```bash
+# 1. Clone the repository
 git clone https://github.com/ArdaTkn/DevDock.git
 cd DevDock
+
+# 2. Install frontend dependencies
 npm install
-npm run tauri dev      # runs the desktop app with hot-reload
-```
 
-### Run the scanner standalone (no UI)
-
-```bash
-cd src-tauri
-cargo run --example sample_scan -- ~/Projects ~/Code
-```
-
-### Tests & lint
-
-```bash
-# Rust
-cd src-tauri
-cargo test             # unit + integration tests
-cargo clippy -- -D warnings
-
-# Frontend
-npm run typecheck
-npm run build
+# 3. Run in development mode (hot-reload)
+npm run tauri dev
 ```
 
 ---
 
-## Architecture
+## 🏗️ Architecture
+
+DevDock is built using **Tauri 2**, linking a lightweight React 18 frontend with a high-performance Rust core via typed IPC:
 
 ```
-┌─────────────────────────────────┐
-│          React UI               │  Vite + React + TypeScript (renderer)
-└──────────────┬──────────────────┘
-               │  Tauri IPC (commands + events)
-┌──────────────▼──────────────────┐
-│           Rust Core             │  tokio async workers
-│                                 │
-│  discovery/   project scanner   │
-│  git/         git metadata      │
-│  system/      editor/terminal   │
-│  storage/     SQLite            │
-└──────────────┬──────────────────┘
-        ┌──────▼───────┐
-        │    SQLite    │   metadata + paths only (never source code)
-        └──────────────┘
+┌─────────────────────────────────────────────────────────┐
+│              React UI (Frontend - Renderer)             │
+│   • Vite + React 18 + TypeScript (Strict)               │
+│   • Zustand (State Management)                          │
+│   • Modern & Compact Plain CSS (Dark Theme UI)          │
+└────────────────────────────┬────────────────────────────┘
+                             │  Tauri IPC (Typed Commands & Events)
+┌────────────────────────────▼────────────────────────────┐
+│                    Rust Core (Backend)                  │
+│   • discovery/  (Async multi-threaded directory walker) │
+│   • git/        (Read-only Git CLI porcelain parser)    │
+│   • processes/  (Smart filtering dev listening ports)   │
+│   • docker/     (Docker container inspector)            │
+│   • health/     (Deterministic project health audit)   │
+│   • system/     (Safe OS launcher & script runner)      │
+│   • storage/    (Embedded SQLite - rusqlite)             │
+│   • watch/      (Incremental FS events - notify crate)  │
+└────────────────────────────┬────────────────────────────┘
+                    ┌────────▼────────┐
+                    │  SQLite Database│ (Metadata & paths only)
+                    └─────────────────┘
 ```
 
-- **Renderer** never touches the filesystem or spawns processes. It only calls
-  typed Tauri commands and receives typed results.
-- **Rust core** owns all filesystem/process/system work and returns serde DTOs.
-- **SQLite** stores only paths and metadata.
-
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and
-[`docs/PLAN.md`](docs/PLAN.md) for details.
+For full architecture details, check out [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ---
 
-## Project detection
+## 🛡️ Security & Privacy
 
-A `ProjectDetector` trait + a registry keep detection independent and testable:
+- **Local-First & Offline:** DevDock works 100% offline. No cloud, no external servers, no user accounts.
+- **No Source Code Uploads:** DevDock scans only file/folder names, marker files (like `package.json` script keys), and Git status. Your source code, `.env` files, and secrets are **never** read or transmitted.
+- **Zero Telemetry:** No tracking, no background pinging, no analytics.
+- **Safe Process Spawning:** Every editor, terminal, or script launcher uses explicit argv (`Command::new(bin).args(...)`) rather than raw shell execution, preventing shell-injection vulnerabilities.
 
-```
-ProjectDetector
- ├── GitDetector      (.git)
- ├── NodeDetector     (package.json — reads scripts/deps)
- ├── PythonDetector   (pyproject.toml, requirements.txt, Pipfile, setup.py)
- ├── RustDetector     (Cargo.toml)
- ├── GoDetector       (go.mod)
- ├── FlutterDetector  (pubspec.yaml)
- ├── DotNetDetector   (*.csproj, *.sln)
- ├── DockerDetector   (Dockerfile, compose.yml)
- ├── UnityDetector    (ProjectSettings/Assets/Packages)
- └── JavaDetector     (pom.xml, build.gradle(.kts))
-```
-
-Adding a detector = implement the trait + register it. See
-[`docs/DETECTORS.md`](docs/DETECTORS.md).
+Read our full [Security Policy](SECURITY.md) and [`docs/SECURITY.md`](docs/SECURITY.md).
 
 ---
 
-## Privacy & security
+## 🗺️ Roadmap
 
-- **Local-first:** works fully offline. No account, no cloud, no backend.
-- **No source upload:** DevDock reads only directory listings, marker files
-  (e.g. `package.json` *scripts*), and Git status (read-only). It never reads
-  or transmits your source code, environment variables, or keys.
-- **No telemetry by default.**
-- **No auto-execution:** the app never runs project commands on its own; every
-  open/terminal action is user-initiated via explicit argv (no shell), which
-  eliminates shell-injection.
-- **No elevated privileges:** normal operation never asks for admin/root.
+- [x] **v0.1.0** — Core scanner, Git metadata parser, project card grid, technology detectors.
+- [x] **v0.2.0** — Command Palette (`⌘K`), FileSystem Watcher (`notify`), Recently Opened strip, Code Editor & Terminal selector.
+- [x] **v0.3.0** — Smart Listening Port scanner (`localhost:3000`, `5173`), Docker container inspector, deterministic project health audit.
+- [x] **v0.4.0** — GitHub integration, custom project tags, auto-saved Markdown notes, configurable custom shell commands.
+- [ ] **v0.5.0** *(In Progress)* — Project dependency visualizer, workspace grouping, custom theme customization.
+- [ ] **v1.0.0** — Opt-in local AI assistance (never enabled by default).
 
-See [`docs/SECURITY.md`](docs/SECURITY.md).
+Check out [`docs/PLAN.md`](docs/PLAN.md) for full roadmap details.
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
-Contributions are welcome! Read [`CONTRIBUTING.md`](CONTRIBUTING.md) first —
-it covers how to add a detector, the code of conduct, and the dev setup.
+Contributions are warmly welcomed! Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) to learn how to add new technology detectors or contribute to the Tauri/React codebase. Please follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## Supporting
+---
 
-DevDock is free and open source (MIT). If it helps your workflow, consider:
+## 📄 License
 
-- ⭐ starring the repo and sharing it with other developers
-- 🐛 filing issues / PRs for bugs, ideas, or new detectors
-
-
-## License
-
-[MIT](LICENSE) © Arda Tekin
+DevDock is released under the **[MIT License](LICENSE)** © [Arda Tekin](https://github.com/ArdaTkn).
