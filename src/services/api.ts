@@ -69,6 +69,23 @@ export const api = {
 
   listListeningPorts: () =>
     invoke<import("../types").PortInfo[]>("list_listening_ports"),
+
+  listDockerContainers: () =>
+    invoke<import("../types").DockerContainerInfo[]>("list_docker_containers"),
+
+  getProjectHealth: (path: string, isGitDirty: boolean) =>
+    invoke<import("../types").ProjectHealth>("get_project_health", {
+      path,
+      isGitDirty,
+    }),
+
+  listProjectScripts: (path: string) =>
+    invoke<import("../types").ProjectScript[]>("list_project_scripts", {
+      path,
+    }),
+
+  runProjectScript: (path: string, scriptCommand: string) =>
+    invoke<void>("run_project_script", { path, scriptCommand }),
 };
 
 /** Turns a Rust ErrorDto into a readable string for inline UI display. */

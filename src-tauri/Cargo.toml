@@ -1,6 +1,6 @@
 [package]
 name = "devdock"
-version = "0.2.0"
+version = "0.3.0"
 description = "Your local development command center"
 authors = ["Arda Tekin"]
 edition = "2021"

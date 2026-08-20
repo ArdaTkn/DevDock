@@ -1,8 +1,10 @@
 pub mod commands;
 pub mod discovery;
+pub mod docker;
 pub mod error;
 pub mod fs;
 pub mod git;
+pub mod health;
 pub mod models;
 pub mod processes;
 pub mod storage;
@@ -90,6 +92,10 @@ pub fn run() {
             commands::get_terminal_pref,
             commands::set_terminal_pref,
             commands::list_listening_ports,
+            commands::list_docker_containers,
+            commands::get_project_health,
+            commands::list_project_scripts,
+            commands::run_project_script,
         ])
         .run(tauri::generate_context!())
         .expect("error while running DevDock");

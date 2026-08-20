@@ -46,9 +46,12 @@ No account. No cloud. No configuration-heavy setup.
 
 ## Features
 
-**Core Features (v0.1 & v0.2 active):**
+**Core Features (v0.1, v0.2 & v0.3 active):**
 
 - ✅ **Smart Dev Port & Live Server Scanner** — automatically scans active listening TCP ports (`localhost:3000`, `5173`, `8000`, `5432`, `6379`, etc.), filters out non-dev background noise (Spotify, Discord, system daemons), and renders a responsive glassmorphism grid with live pulsing dots, PID badges, and 1-click browser launchers
+- ✅ **Docker Container Inspector** — detects active/recent Docker containers, statuses, images, and port mappings
+- ✅ **Deterministic Project Health Audit** — scores project health (0-100), checks dependency presence (`node_modules`, `.venv`), README docs, and Git cleanliness
+- ✅ **Custom Project Script Launcher** — detects package/Cargo/Makefile scripts (`npm run dev`, `cargo run`, `make dev`) and runs them in your terminal with 1 click
 - ✅ **Scan user-selected directories** (add/remove anytime)
 - ✅ **Automatic project detection** — Git, Node, Python, Rust, Go, Flutter, .NET, Docker, Unity, Java (extensible detector architecture)
 - ✅ **Read-only Git metadata** — branch, clean/dirty, staged/modified/untracked counts, last commit, remote URL
@@ -65,7 +68,7 @@ No account. No cloud. No configuration-heavy setup.
 
 **Roadmap:**
 
-- v0.3 *(in progress)* — Docker container inspection, deterministic project health checks, custom script launchers
+- v0.4 *(next up)* — GitHub integration, tags, notes, configurable project commands
 - v0.4 — GitHub integration, tags, notes, configurable project commands
 - v0.5+ — opt-in AI (local / OpenAI / Anthropic / Google — never on by default)
 

@@ -20,16 +20,27 @@ export function ProjectCard({ project }: { project: Project }) {
     >
       <div className="card-head">
         <span className="card-name">{project.name}</span>
-        <span
-          className="star"
-          role="button"
-          aria-label="toggle favorite"
-          onClick={(e) => {
-            e.stopPropagation();
-            void toggleFavorite(project.id, !project.is_favorite);
-          }}
-        >
-          {project.is_favorite ? "★" : "☆"}
+        <span className="card-head-right">
+          {gs === "dirty" ? (
+            <span className="health-tag health-attention" title="Uncommitted changes">
+              🟡 Mod
+            </span>
+          ) : (
+            <span className="health-tag health-ok" title="Clean Git & Healthy">
+              🟢 Ready
+            </span>
+          )}
+          <span
+            className="star"
+            role="button"
+            aria-label="toggle favorite"
+            onClick={(e) => {
+              e.stopPropagation();
+              void toggleFavorite(project.id, !project.is_favorite);
+            }}
+          >
+            {project.is_favorite ? "★" : "☆"}
+          </span>
         </span>
       </div>
 

@@ -65,3 +65,27 @@ export interface PortInfo {
   process_name: string;
   label: String;
 }
+
+export interface DockerContainerInfo {
+  id: string;
+  name: string;
+  image: string;
+  status: string;
+  ports: string;
+  is_running: boolean;
+}
+
+export interface ProjectHealth {
+  score: number;
+  status: string;
+  deps_installed: boolean;
+  has_readme: boolean;
+  is_git_clean: boolean;
+  issues: string[];
+}
+
+export interface ProjectScript {
+  name: string;
+  command: string;
+  source: string;
+}

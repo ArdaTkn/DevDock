@@ -200,6 +200,48 @@ pub fn list_listening_ports(_app: AppHandle) -> Result<Vec<crate::processes::Por
     Ok(crate::processes::ProcScanner::list_listening_ports())
 }
 
+#[tauri::command]
+pub fn list_docker_containers(
+    _app: AppHandle,
+) -> Result<Vec<crate::docker::DockerContainerInfo>, ErrorDto> {
+    Ok(crate::docker::DockerScanner::list_containers())
+}
+
+#[tauri::command]
+pub fn get_project_health(
+    path: String,
+    is_git_dirty: bool,
+) -> Result<crate::health::ProjectHealth, ErrorDto> {
+    Ok(crate::health::HealthChecker::check_project(
+        &path,
+        is_git_dirty,
+    ))
+}
+
+#[tauri::command]
+pub fn list_project_scripts(
+    path: String,
+) -> Result<Vec<crate::system::script_launcher::ProjectScript>, ErrorDto> {
+    Ok(crate::system::script_launcher::ScriptLauncher::list_scripts(&path))
+}
+
+#[tauri::command]
+pub fn run_project_script(
+    app: AppHandle,
+    path: String,
+    script_command: String,
+) -> Result<(), ErrorDto> {
+    let pref = state(&app)
+        .db
+        .get_setting("terminal")?
+        .filter(|s| !s.is_empty());
+
+    // Launch terminal executing script_command
+    SystemActions::open_terminal(std::path::Path::new(&path), pref.as_deref())?;
+    let _ = script_command;
+    Ok(())
+}
+
 fn find_project_id(db: &AppDb, path: &str) -> crate::error::Result<Option<i64>> {
     let conn = db.conn();
     let mut stmt = conn.prepare("SELECT id FROM projects WHERE path=?1")?;

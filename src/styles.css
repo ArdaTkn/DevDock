@@ -221,7 +221,29 @@ html, body, #root {
 .card-head {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+}
+.card-head-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.health-tag {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.health-ok {
+  background: var(--accent-dim);
+  color: #a7f3d0;
+  border: 1px solid #1d4a38;
+}
+.health-attention {
+  background: #3a2e19;
+  color: #fde68a;
+  border: 1px solid #5c4a1d;
 }
 .card-name { font-weight: 650; font-size: 14px; word-break: break-word; }
 .star { cursor: pointer; color: var(--yellow); font-size: 16px; line-height: 1; }
@@ -703,4 +725,68 @@ html, body, #root {
 }
 .port-card:hover .port-open-icon {
   opacity: 1;
+}
+
+/* ── Health Audit & Scripts ───────────────────────────── */
+.health-bar-bg {
+  width: 100%;
+  height: 8px;
+  background: var(--bg);
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+}
+.health-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+.health-issues {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-radius: 6px;
+  border-left: 3px solid var(--yellow);
+  font-size: 12.5px;
+}
+.health-issues ul {
+  margin: 6px 0 0 18px;
+  padding: 0;
+}
+.health-issues li {
+  margin-bottom: 2px;
+  color: var(--muted);
+}
+.scripts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+.script-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.script-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+}
+.script-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+}
+.script-cmd {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
