@@ -213,21 +213,28 @@ export function Dashboard() {
       {ports.length > 0 && (
         <section className="ports-section">
           <div className="ports-header">
-            <span className="ports-title">🟢 Active Local Servers & Ports ({ports.length})</span>
+            <span className="ports-title">🟢 Active Local Dev Servers & Services ({ports.length})</span>
+            <span className="ports-subtitle">Click to open localhost in browser</span>
           </div>
-          <div className="ports-row">
+          <div className="ports-grid">
             {ports.map((p) => (
               <a
                 key={`port-${p.port}`}
-                className="port-chip"
+                className="port-card"
                 href={`http://localhost:${p.port}`}
                 target="_blank"
                 rel="noreferrer"
                 title={`Open http://localhost:${p.port} in browser (PID ${p.pid})`}
               >
-                <span className="port-dot">●</span>
-                <span className="port-num">:{p.port}</span>
-                <span className="port-label">{p.label}</span>
+                <div className="port-card-top">
+                  <span className="port-pulse-dot" />
+                  <span className="port-num">:{p.port}</span>
+                  <span className="port-pid">PID {p.pid}</span>
+                </div>
+                <div className="port-card-bottom">
+                  <span className="port-label">{p.label}</span>
+                  <span className="port-open-icon">↗</span>
+                </div>
               </a>
             ))}
           </div>

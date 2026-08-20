@@ -46,27 +46,26 @@ No account. No cloud. No configuration-heavy setup.
 
 ## Features
 
-**Core MVP & Productivity (v0.1 & v0.2 working):**
+**Core Features (v0.1 & v0.2 active):**
 
-- ✅ Scan user-selected directories (add/remove anytime)
-- ✅ Automatic project detection — Git, Node, Python, Rust, Go, Flutter,
-  .NET, Docker, Unity, Java (extensible detector architecture)
-- ✅ Read-only Git metadata — branch, clean/dirty, staged/modified/untracked
-  counts, last commit, remote URL
-- ✅ Command Palette (`⌘K` / `Ctrl+K`) for fast project search & quick actions
-- ✅ Real-time FileSystem Watcher (`notify` crate) for live background updates
-- ✅ Recently Opened projects quick launcher strip
-- ✅ Configurable Code Editor & Terminal preferences (VS Code, Cursor, Zed, Windsurf, etc.)
-- ✅ Technology badges + search + filter + sort (recent, name, dirty, path)
-- ✅ Favorites (pinned to top)
-- ✅ Open in Editor / Open in Terminal / Show in Finder
-- ✅ SQLite storage (metadata + paths only — never source code)
-- ✅ Local-first, privacy-first, no telemetry
-- ✅ 9 passing integration tests (detectors + git + end-to-end scan)
+- ✅ **Smart Dev Port & Live Server Scanner** — automatically scans active listening TCP ports (`localhost:3000`, `5173`, `8000`, `5432`, `6379`, etc.), filters out non-dev background noise (Spotify, Discord, system daemons), and renders a responsive glassmorphism grid with live pulsing dots, PID badges, and 1-click browser launchers
+- ✅ **Scan user-selected directories** (add/remove anytime)
+- ✅ **Automatic project detection** — Git, Node, Python, Rust, Go, Flutter, .NET, Docker, Unity, Java (extensible detector architecture)
+- ✅ **Read-only Git metadata** — branch, clean/dirty, staged/modified/untracked counts, last commit, remote URL
+- ✅ **Command Palette (`⌘K` / `Ctrl+K`)** for fast project search & quick actions
+- ✅ **Real-time FileSystem Watcher (`notify` crate)** for live background updates
+- ✅ **Recently Opened projects** quick launcher strip
+- ✅ **Configurable Code Editor & Terminal preferences** (VS Code, Cursor, Zed, Windsurf, etc.)
+- ✅ **Technology badges + search + filter + sort** (recent, name, dirty, path)
+- ✅ **Favorites** (pinned to top)
+- ✅ **Open in Editor / Open in Terminal / Show in Finder**
+- ✅ **SQLite storage** (metadata + paths only — never source code)
+- ✅ **Local-first, privacy-first, no telemetry**
+- ✅ **9 passing integration tests** (detectors + git + end-to-end scan)
 
 **Roadmap:**
 
-- v0.3 *(next up)* — running processes, listening port detection (`localhost:3000`, `5173`), Docker containers, project health checks
+- v0.3 *(in progress)* — Docker container inspection, deterministic project health checks, custom script launchers
 - v0.4 — GitHub integration, tags, notes, configurable project commands
 - v0.5+ — opt-in AI (local / OpenAI / Anthropic / Google — never on by default)
 
