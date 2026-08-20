@@ -1,0 +1,30 @@
+#!/usr/bin/env node
+
+/**
+ * DevDock CLI Launcher
+ * Usage: devdock
+ */
+
+import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+import { existsSync } from "node:fs";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const rootDir = join(__dirname, "..");
+const appPath = join(
+  rootDir,
+  "src-tauri/target/release/bundle/macos/DevDock.app"
+);
+
+if (process.platform === "darwin") {
+  if (existsSync(appPath)) {
+    spawn("open", ["-a", appPath], { stdio: "inherit", detached: true });
+  } else {
+    spawn("open", ["-a", "DevDock"], { stdio: "inherit", detached: true });
+  }
+} else if (process.platform === "win32") {
+  spawn("cmd", ["/c", "start", "DevDock"], { stdio: "inherit", detached: true });
+} else {
+  spawn("devdock", [], { stdio: "inherit", detached: true });
+}

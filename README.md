@@ -100,6 +100,18 @@ Download prebuilt binary installers for your OS from the **[Releases](https://gi
 > xattr -dr com.apple.quarantine /Applications/DevDock.app
 > ```
 
+### Terminal CLI Quick Launcher
+
+Launch DevDock instantly from any terminal window just like `agy`:
+
+```bash
+# Type 'devdock' in any terminal (zsh / bash) to launch DevDock immediately!
+devdock
+```
+
+> [!TIP]
+> If you clone the repo, run `npm link` to register the `devdock` CLI command globally on your machine.
+
 ---
 
 ### Building from Source
