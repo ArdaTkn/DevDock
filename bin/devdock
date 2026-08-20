@@ -8,10 +8,21 @@
 import { spawn, execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, realpathSync } from "node:fs";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const rootDir = join(__dirname, "..");
+// Resolve actual git repository directory regardless of symlinks or invocation location
+let rootDir = "";
+try {
+  const scriptPath = realpathSync(process.argv[1] || fileURLToPath(import.meta.url));
+  rootDir = join(dirname(scriptPath), "..");
+} catch {
+  rootDir = join(dirname(fileURLToPath(import.meta.url)), "..");
+}
+
+if (!existsSync(join(rootDir, ".git")) && existsSync(join(process.env.HOME || "", "devdock", ".git"))) {
+  rootDir = join(process.env.HOME || "", "devdock");
+}
+
 const appPath = join(
   rootDir,
   "src-tauri/target/release/bundle/macos/DevDock.app"
