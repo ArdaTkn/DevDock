@@ -1,6 +1,8 @@
 <div align="center">
 
-# ⚓ DevDock
+<img src="src/assets/logo.png" alt="DevDock Logo" width="128" height="128" style="border-radius: 24px; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);" />
+
+# DevDock
 
 ### **Your Local Development Command Center**
 

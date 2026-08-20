@@ -6,6 +6,8 @@ import { Settings } from "./pages/Settings";
 import { CommandPalette } from "./components/CommandPalette";
 import { useThemeStore } from "./stores/themeStore";
 
+import logoImg from "./assets/logo.png";
+
 function Layout() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const theme = useThemeStore((s) => s.theme);
@@ -29,7 +31,7 @@ function Layout() {
     <div className="app">
       <nav className="sidebar">
         <div className="brand">
-          <span className="brand-mark">D</span>
+          <img src={logoImg} alt="DevDock" className="brand-logo" />
           <span className="brand-name">DevDock</span>
         </div>
         <div className="nav-links">
