@@ -82,9 +82,7 @@ Without DevDock, answering simple questions requires constant terminal navigatio
 
 ---
 
-## ⚡ Quick Start
-
-### 🚀 1-Step Terminal Launcher (`devdock`)
+## ⚡ Quick Start & Installation
 
 Launch DevDock instantly from any terminal window just like `agy`:
 
@@ -98,28 +96,7 @@ devdock
 ```
 
 > [!TIP]
-> Once linked with `npm link`, you never need to navigate to the repo directory or type `npm run tauri dev` again. Just type `devdock` in any shell (zsh / bash) to launch your command center!
-
----
-
-### Building from Source
-
-#### Prerequisites
-- **Rust Toolchain** (1.75+) — via `rustup`
-- **Node.js** (18+) and `npm`
-
-#### Step-by-Step
-```bash
-# 1. Clone the repository
-git clone https://github.com/ArdaTkn/DevDock.git
-cd DevDock
-
-# 2. Install frontend dependencies
-npm install
-
-# 3. Run in development mode (hot-reload)
-npm run tauri dev
-```
+> Once linked with `npm link`, you never need to navigate to the repo directory or run complex commands again. Just type `devdock` in any shell (`zsh`, `bash`, `fish`) to launch your command center!
 
 ---
 
