@@ -84,33 +84,21 @@ Without DevDock, answering simple questions requires constant terminal navigatio
 
 ## ⚡ Quick Start
 
-### Installation
-
-Download prebuilt binary installers for your OS from the **[Releases](https://github.com/ArdaTkn/DevDock/releases)** page:
-
-| OS | Package Format | Direct Release Link |
-| :--- | :--- | :--- |
-| **macOS** (Apple Silicon / Intel) | `.dmg` | [Download macOS Installer](https://github.com/ArdaTkn/DevDock/releases) |
-| **Windows** (x64) | `.msi` / `.exe` | [Download Windows Installer](https://github.com/ArdaTkn/DevDock/releases) |
-| **Linux** (Ubuntu / Debian / AppImage) | `.AppImage` / `.deb` | [Download Linux Installer](https://github.com/ArdaTkn/DevDock/releases) |
-
-> [!TIP]
-> On macOS, because binaries are self-signed, right-click the app → select **Open**, or run:
-> ```bash
-> xattr -dr com.apple.quarantine /Applications/DevDock.app
-> ```
-
-### Terminal CLI Quick Launcher
+### 🚀 1-Step Terminal Launcher (`devdock`)
 
 Launch DevDock instantly from any terminal window just like `agy`:
 
 ```bash
-# Type 'devdock' in any terminal (zsh / bash) to launch DevDock immediately!
+# 1. Clone the repository & link the CLI globally
+git clone https://github.com/ArdaTkn/DevDock.git
+cd DevDock && npm install && npm link
+
+# 2. Type 'devdock' anywhere in your terminal to launch DevDock!
 devdock
 ```
 
 > [!TIP]
-> If you clone the repo, run `npm link` to register the `devdock` CLI command globally on your machine.
+> Once linked with `npm link`, you never need to navigate to the repo directory or type `npm run tauri dev` again. Just type `devdock` in any shell (zsh / bash) to launch your command center!
 
 ---
 
