@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import type { Project, ProjectHealth, ProjectScript } from "../types";
 import { api } from "../services/api";
 import { displayPath, gitState, humanSize, timeAgo } from "../lib/format";
 
 export function ProjectDetail() {
   const { id } = useParams();
+  const nav = useNavigate();
   const [project, setProject] = useState<Project | null>(null);
   const [health, setHealth] = useState<ProjectHealth | null>(null);
   const [scripts, setScripts] = useState<ProjectScript[]>([]);
@@ -37,6 +38,12 @@ export function ProjectDetail() {
 
   return (
     <div className="page detail">
+      <div className="detail-top-nav">
+        <button className="back-btn" onClick={() => nav("/")}>
+          ← Back to Projects
+        </button>
+      </div>
+
       <h1 className="detail-title">{project.name}</h1>
       <div className="detail-path">{displayPath(project.path)}</div>
 

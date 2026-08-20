@@ -378,6 +378,29 @@ html, body, #root {
   font-weight: 600;
   margin-bottom: 12px;
 }
+.detail-top-nav {
+  margin-bottom: 12px;
+}
+.back-btn {
+  background: var(--bg-raise);
+  border: 1px solid var(--border-soft);
+  color: var(--text);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.back-btn:hover {
+  background: var(--bg-card);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.detail-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
 .scan-label { font-size: 14px; }
 .scan-bar {
   height: 8px;
