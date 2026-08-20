@@ -89,3 +89,17 @@ export interface ProjectScript {
   command: string;
   source: string;
 }
+
+export interface GitHubRepoInfo {
+  owner: string;
+  repo: string;
+  repo_url: string;
+  issues_url: string;
+  pulls_url: string;
+}
+
+export interface CustomCommandDto {
+  id: number;
+  name: string;
+  command: string;
+}

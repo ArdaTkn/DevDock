@@ -3,6 +3,7 @@ use crate::models::{Project, ScanLocation, ScanSummary};
 use crate::storage::project_repo::ProjectRepo;
 use crate::storage::AppDb;
 use crate::system::SystemActions;
+use serde::Serialize;
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Emitter, Manager, State};
@@ -239,6 +240,116 @@ pub fn run_project_script(
     // Launch terminal executing script_command
     SystemActions::open_terminal(std::path::Path::new(&path), pref.as_deref())?;
     let _ = script_command;
+    Ok(())
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct GitHubRepoInfo {
+    pub owner: String,
+    pub repo: String,
+    pub repo_url: String,
+    pub issues_url: String,
+    pub pulls_url: String,
+}
+
+#[tauri::command]
+pub fn get_github_info(remote_url: String) -> Option<GitHubRepoInfo> {
+    let url = remote_url.trim();
+    if !url.contains("github.com") {
+        return None;
+    }
+
+    let clean = url.trim_end_matches(".git");
+    let parts: Vec<&str> = if clean.contains("git@github.com:") {
+        clean.split("git@github.com:").last()?.split('/').collect()
+    } else if clean.contains("github.com/") {
+        clean.split("github.com/").last()?.split('/').collect()
+    } else {
+        return None;
+    };
+
+    if parts.len() >= 2 {
+        let owner = parts[0].to_string();
+        let repo = parts[1].to_string();
+        let repo_url = format!("https://github.com/{owner}/{repo}");
+        let issues_url = format!("https://github.com/{owner}/{repo}/issues");
+        let pulls_url = format!("https://github.com/{owner}/{repo}/pulls");
+
+        Some(GitHubRepoInfo {
+            owner,
+            repo,
+            repo_url,
+            issues_url,
+            pulls_url,
+        })
+    } else {
+        None
+    }
+}
+
+#[tauri::command]
+pub fn get_project_tags(app: AppHandle, project_id: i64) -> Result<Vec<String>, ErrorDto> {
+    Ok(state(&app).db.get_tags(project_id)?)
+}
+
+#[tauri::command]
+pub fn add_project_tag(app: AppHandle, project_id: i64, tag: String) -> Result<(), ErrorDto> {
+    state(&app).db.add_tag(project_id, &tag)?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn remove_project_tag(app: AppHandle, project_id: i64, tag: String) -> Result<(), ErrorDto> {
+    state(&app).db.remove_tag(project_id, &tag)?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn get_project_notes(app: AppHandle, project_id: i64) -> Result<Option<String>, ErrorDto> {
+    Ok(state(&app).db.get_notes(project_id)?)
+}
+
+#[tauri::command]
+pub fn set_project_notes(app: AppHandle, project_id: i64, content: String) -> Result<(), ErrorDto> {
+    state(&app).db.set_notes(project_id, &content)?;
+    Ok(())
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct CustomCommandDto {
+    pub id: i64,
+    pub name: String,
+    pub command: String,
+}
+
+#[tauri::command]
+pub fn list_custom_commands(
+    app: AppHandle,
+    project_id: i64,
+) -> Result<Vec<CustomCommandDto>, ErrorDto> {
+    let raw = state(&app).db.list_custom_commands(project_id)?;
+    Ok(raw
+        .into_iter()
+        .map(|(id, name, command)| CustomCommandDto { id, name, command })
+        .collect())
+}
+
+#[tauri::command]
+pub fn add_custom_command(
+    app: AppHandle,
+    project_id: i64,
+    name: String,
+    command: String,
+) -> Result<(), ErrorDto> {
+    state(&app)
+        .db
+        .add_custom_command(project_id, &name, &command)?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn remove_custom_command(app: AppHandle, id: i64) -> Result<(), ErrorDto> {
+    state(&app).db.remove_custom_command(id)?;
     Ok(())
 }
 

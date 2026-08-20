@@ -46,8 +46,12 @@ No account. No cloud. No configuration-heavy setup.
 
 ## Features
 
-**Core Features (v0.1, v0.2 & v0.3 active):**
+**Core Features (v0.1, v0.2, v0.3 & v0.4 active):**
 
+- ✅ **GitHub Integration** — automatically parses GitHub remote URLs (`owner/repo`), providing 1-click browser quick actions for Repository, Issues, and Pull Requests
+- ✅ **Project Tags & Categories** — custom tag chips (`open-source`, `client`, `side-project`) stored locally in SQLite
+- ✅ **Project Quick Notes & Reminders** — auto-saved markdown notes per project for tracking TODOs and reminders
+- ✅ **Configurable Custom Commands** — user-defined custom shell commands (`cargo watch`, `docker compose up`, etc.) executed with 1 click in your preferred terminal
 - ✅ **Smart Dev Port & Live Server Scanner** — automatically scans active listening TCP ports (`localhost:3000`, `5173`, `8000`, `5432`, `6379`, etc.), filters out non-dev background noise (Spotify, Discord, system daemons), and renders a responsive glassmorphism grid with live pulsing dots, PID badges, and 1-click browser launchers
 - ✅ **Docker Container Inspector** — detects active/recent Docker containers, statuses, images, and port mappings
 - ✅ **Deterministic Project Health Audit** — scores project health (0-100), checks dependency presence (`node_modules`, `.venv`), README docs, and Git cleanliness
@@ -68,9 +72,7 @@ No account. No cloud. No configuration-heavy setup.
 
 **Roadmap:**
 
-- v0.4 *(next up)* — GitHub integration, tags, notes, configurable project commands
-- v0.4 — GitHub integration, tags, notes, configurable project commands
-- v0.5+ — opt-in AI (local / OpenAI / Anthropic / Google — never on by default)
+- v0.5+ — opt-in AI assistance (local / OpenAI / Anthropic / Google — never on by default)
 
 ---
 

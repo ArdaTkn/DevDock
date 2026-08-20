@@ -86,6 +86,37 @@ export const api = {
 
   runProjectScript: (path: string, scriptCommand: string) =>
     invoke<void>("run_project_script", { path, scriptCommand }),
+
+  getGithubInfo: (remoteUrl: string) =>
+    invoke<import("../types").GitHubRepoInfo | null>("get_github_info", {
+      remoteUrl,
+    }),
+
+  getProjectTags: (projectId: number) =>
+    invoke<string[]>("get_project_tags", { projectId }),
+
+  addProjectTag: (projectId: number, tag: string) =>
+    invoke<void>("add_project_tag", { projectId, tag }),
+
+  removeProjectTag: (projectId: number, tag: string) =>
+    invoke<void>("remove_project_tag", { projectId, tag }),
+
+  getProjectNotes: (projectId: number) =>
+    invoke<string | null>("get_project_notes", { projectId }),
+
+  setProjectNotes: (projectId: number, content: string) =>
+    invoke<void>("set_project_notes", { projectId, content }),
+
+  listCustomCommands: (projectId: number) =>
+    invoke<import("../types").CustomCommandDto[]>("list_custom_commands", {
+      projectId,
+    }),
+
+  addCustomCommand: (projectId: number, name: string, command: string) =>
+    invoke<void>("add_custom_command", { projectId, name, command }),
+
+  removeCustomCommand: (id: number) =>
+    invoke<void>("remove_custom_command", { id }),
 };
 
 /** Turns a Rust ErrorDto into a readable string for inline UI display. */
