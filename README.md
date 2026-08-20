@@ -170,7 +170,7 @@ Read our full [Security Policy](SECURITY.md) and [`docs/SECURITY.md`](docs/SECUR
 - [x] **v0.2.0** — Command Palette (`⌘K`), FileSystem Watcher (`notify`), Recently Opened strip, Code Editor & Terminal selector.
 - [x] **v0.3.0** — Smart Listening Port scanner (`localhost:3000`, `5173`), Docker container inspector, deterministic project health audit.
 - [x] **v0.4.0** — GitHub integration, custom project tags, auto-saved Markdown notes, configurable custom shell commands.
-- [ ] **v0.5.0** *(In Progress)* — Project dependency visualizer, workspace grouping, custom theme customization.
+- [x] **v0.5.0** — Project dependency visualizer, workspace grouping, custom theme customization.
 - [ ] **v1.0.0** — Opt-in local AI assistance (never enabled by default).
 
 Check out [`docs/PLAN.md`](docs/PLAN.md) for full roadmap details.
