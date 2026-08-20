@@ -66,6 +66,9 @@ export const api = {
 
   setTerminalPref: (pref: string) =>
     invoke<void>("set_terminal_pref", { pref }),
+
+  listListeningPorts: () =>
+    invoke<import("../types").PortInfo[]>("list_listening_ports"),
 };
 
 /** Turns a Rust ErrorDto into a readable string for inline UI display. */

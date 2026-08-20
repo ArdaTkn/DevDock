@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { api } from "../services/api";
+import type { PortInfo } from "../types";
 
 interface SystemState {
   editor: string | null;
@@ -9,6 +10,8 @@ interface SystemState {
   terminals: string[];
   /** User-chosen terminal; "" = "System default (auto)". */
   terminalPref: string;
+  /** Active listening TCP ports on the machine */
+  ports: PortInfo[];
   loading: boolean;
   detectEditor: () => Promise<void>;
   loadEditors: () => Promise<void>;
@@ -17,6 +20,7 @@ interface SystemState {
   loadTerminals: () => Promise<void>;
   loadTerminalPref: () => Promise<void>;
   setTerminal: (t: string) => Promise<void>;
+  loadPorts: () => Promise<void>;
 }
 
 export const useSystemStore = create<SystemState>((set) => ({
@@ -25,6 +29,7 @@ export const useSystemStore = create<SystemState>((set) => ({
   editorPref: "",
   terminals: [],
   terminalPref: "",
+  ports: [],
   loading: false,
 
   detectEditor: async () => {
@@ -61,5 +66,14 @@ export const useSystemStore = create<SystemState>((set) => ({
   setTerminal: async (t) => {
     await api.setTerminalPref(t);
     set({ terminalPref: t });
+  },
+
+  loadPorts: async () => {
+    try {
+      const ports = await api.listListeningPorts();
+      set({ ports });
+    } catch {
+      set({ ports: [] });
+    }
   },
 }));

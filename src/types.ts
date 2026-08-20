@@ -58,3 +58,10 @@ export interface ErrorDto {
   message: string;
   hint: string | null;
 }
+
+export interface PortInfo {
+  port: number;
+  pid: number;
+  process_name: string;
+  label: String;
+}

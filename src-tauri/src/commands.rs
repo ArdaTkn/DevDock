@@ -195,6 +195,11 @@ pub fn detect_editor(app: AppHandle) -> Result<Option<String>, ErrorDto> {
     Ok(SystemActions::detect_editors().first().cloned())
 }
 
+#[tauri::command]
+pub fn list_listening_ports(_app: AppHandle) -> Result<Vec<crate::processes::PortInfo>, ErrorDto> {
+    Ok(crate::processes::ProcScanner::list_listening_ports())
+}
+
 fn find_project_id(db: &AppDb, path: &str) -> crate::error::Result<Option<i64>> {
     let conn = db.conn();
     let mut stmt = conn.prepare("SELECT id FROM projects WHERE path=?1")?;

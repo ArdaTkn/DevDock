@@ -4,6 +4,7 @@ pub mod error;
 pub mod fs;
 pub mod git;
 pub mod models;
+pub mod processes;
 pub mod storage;
 pub mod system;
 pub mod watch;
@@ -88,6 +89,7 @@ pub fn run() {
             commands::list_terminals,
             commands::get_terminal_pref,
             commands::set_terminal_pref,
+            commands::list_listening_ports,
         ])
         .run(tauri::generate_context!())
         .expect("error while running DevDock");

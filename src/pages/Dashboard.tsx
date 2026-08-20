@@ -2,6 +2,7 @@ import { useEffect, useMemo } from "react";
 import { ProjectCard } from "../components/ProjectCard";
 import { useProjectsStore, SortKey } from "../stores/projectsStore";
 import { useScanStore } from "../stores/scanStore";
+import { useSystemStore } from "../stores/systemStore";
 import { allTechs } from "../lib/format";
 import { api } from "../services/api";
 
@@ -21,19 +22,27 @@ export function Dashboard() {
     load,
   } = useProjectsStore();
   const scanStore = useScanStore();
+  const { ports, loadPorts } = useSystemStore();
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       useScanStore.getState().listen();
       void useProjectsStore.getState().listenWatcher();
+      void loadPorts();
       await load();
       if (cancelled) return;
       await useScanStore.getState().ensureScan();
       if (!cancelled) await refresh();
     })();
+
+    const interval = setInterval(() => {
+      void loadPorts();
+    }, 5000);
+
     return () => {
       cancelled = true;
+      clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -199,6 +208,30 @@ export function Dashboard() {
             </button>
           ))}
         </div>
+      )}
+
+      {ports.length > 0 && (
+        <section className="ports-section">
+          <div className="ports-header">
+            <span className="ports-title">🟢 Active Local Servers & Ports ({ports.length})</span>
+          </div>
+          <div className="ports-row">
+            {ports.map((p) => (
+              <a
+                key={`port-${p.port}`}
+                className="port-chip"
+                href={`http://localhost:${p.port}`}
+                target="_blank"
+                rel="noreferrer"
+                title={`Open http://localhost:${p.port} in browser (PID ${p.pid})`}
+              >
+                <span className="port-dot">●</span>
+                <span className="port-num">:{p.port}</span>
+                <span className="port-label">{p.label}</span>
+              </a>
+            ))}
+          </div>
+        </section>
       )}
 
       {recentProjects.length > 0 && !search && techFilter === null && (
