@@ -20,10 +20,13 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
-            let data_dir = app
-                .path()
-                .app_data_dir()
-                .unwrap_or_else(|_| std::path::PathBuf::from("."));
+            let data_dir = std::env::home_dir()
+                .map(|h| h.join(".devdock"))
+                .unwrap_or_else(|| {
+                    app.path()
+                        .app_data_dir()
+                        .unwrap_or_else(|_| std::path::PathBuf::from("."))
+                });
             let db = storage::init_db(&data_dir)?;
 
             // Default: scan the whole home directory so the user can hit "Scan"

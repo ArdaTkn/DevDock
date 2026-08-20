@@ -1,15 +1,15 @@
 use crate::error::Result;
 use rusqlite::Connection;
 use std::path::PathBuf;
-use std::sync::{Mutex, MutexGuard};
+use std::sync::{Arc, Mutex, MutexGuard};
 
 /// Wraps the SQLite connection plus a known data directory.
 ///
-/// `Connection` is `Send` but not `Sync`, so we hold it behind a `Mutex` to make
-/// `AppDb` `Send + Sync` (required by Tauri's `AppState`). All access is
-/// short-lived and sequential, so the lock contention is negligible.
+/// `Connection` is `Send` but not `Sync`, so we hold it behind an `Arc<Mutex>` to make
+/// `AppDb` `Send + Sync + Clone` (required by Tauri's `AppState` & async tasks).
+#[derive(Clone)]
 pub struct AppDb {
-    conn: Mutex<Connection>,
+    conn: Arc<Mutex<Connection>>,
     pub data_dir: PathBuf,
 }
 
@@ -17,16 +17,25 @@ pub struct AppDb {
 pub fn init_db(data_dir: &PathBuf) -> Result<AppDb> {
     std::fs::create_dir_all(data_dir)?;
     let db_path = data_dir.join("devdock.db");
-    let conn = Connection::open(&db_path)?;
-    // Avoid "database is locked" hangs when the scan connection writes
-    // concurrently on the same file (WAL): wait up to 10s for a busy lock.
+
+    let conn = match Connection::open(&db_path) {
+        Ok(c) => c,
+        Err(e) => {
+            tracing::warn!("SQLite open failed ({e}), attempting WAL recovery...");
+            let _ = std::fs::remove_file(data_dir.join("devdock.db-shm"));
+            let _ = std::fs::remove_file(data_dir.join("devdock.db-wal"));
+            Connection::open(&db_path)?
+        }
+    };
+
+    // Avoid "database is locked" hangs when concurrent reads/writes occur
     conn.busy_timeout(std::time::Duration::from_secs(10))?;
-    conn.pragma_update(None, "journal_mode", "WAL")?;
-    conn.pragma_update(None, "synchronous", "NORMAL")?;
-    conn.pragma_update(None, "foreign_keys", "ON")?;
+    let _ = conn.pragma_update(None, "journal_mode", "WAL");
+    let _ = conn.pragma_update(None, "synchronous", "NORMAL");
+    let _ = conn.pragma_update(None, "foreign_keys", "ON");
     migrate(&conn)?;
     Ok(AppDb {
-        conn: Mutex::new(conn),
+        conn: Arc::new(Mutex::new(conn)),
         data_dir: data_dir.clone(),
     })
 }

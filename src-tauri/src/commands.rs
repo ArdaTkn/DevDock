@@ -57,28 +57,27 @@ pub async fn scan_projects(app: AppHandle) -> Result<ScanSummary, ErrorDto> {
         .get_or_insert_with(|| Arc::new(crate::discovery::scanner::ScanHandle::new()))
         .clone();
 
-    let db_dir = st.db.data_dir.clone();
+    let app_db = st.db.clone();
     let app_for_emit = app.clone();
     // Run the scan off the async runtime so the UI stays responsive, emitting
     // `scan-progress` events as projects are ingested.
-    let db = tauri::async_runtime::spawn_blocking({
-        move || -> crate::error::Result<ScanSummary> { run_scan(db_dir, handle, app_for_emit) }
+    let summary = tauri::async_runtime::spawn_blocking({
+        move || -> crate::error::Result<ScanSummary> { run_scan(app_db, handle, app_for_emit) }
     })
     .await
     .map_err(|e| ErrorDto {
         message: format!("Scan task failed: {e}"),
         hint: None,
     })??;
-    let _ = app.emit("scan-complete", &db);
-    Ok(db)
+    let _ = app.emit("scan-complete", &summary);
+    Ok(summary)
 }
 
 fn run_scan(
-    db_dir: PathBuf,
+    db: crate::storage::AppDb,
     handle: Arc<crate::discovery::scanner::ScanHandle>,
     emitter: AppHandle,
 ) -> crate::error::Result<ScanSummary> {
-    let db = crate::storage::init_db(&db_dir)?;
     // Full-scan semantics: drop whatever was found before and rebuild, so stale
     // projects or noise from a previous scope never linger.
     crate::storage::project_repo::ProjectRepo::clear_projects(&db)?;
