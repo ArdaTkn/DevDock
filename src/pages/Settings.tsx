@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useProjectsStore } from "../stores/projectsStore";
 import { useSystemStore } from "../stores/systemStore";
+import { useThemeStore, THEME_OPTIONS } from "../stores/themeStore";
 
 export function Settings() {
   const { locations, error, load, addLocation, removeLocation } = useProjectsStore();
@@ -16,6 +17,7 @@ export function Settings() {
     loadEditorPref,
     setEditor,
   } = useSystemStore();
+  const { theme, setTheme } = useThemeStore();
   const [dir, setDir] = useState("");
   const [adding, setAdding] = useState(false);
 
@@ -140,7 +142,26 @@ export function Settings() {
       </section>
 
       <section className="panel">
-        <h2>Privacy</h2>
+        <h2>Appearance & Theme</h2>
+        <p className="muted">
+          Customize DevDock's visual theme and color palette.
+        </p>
+        <div className="theme-grid">
+          {THEME_OPTIONS.map((t) => (
+            <button
+              key={t.key}
+              className={`theme-card ${theme === t.key ? "active" : ""}`}
+              onClick={() => setTheme(t.key)}
+            >
+              <span className="theme-swatch" style={{ background: t.accent }} />
+              <span className="theme-name">{t.name}</span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="panel">
+        <h2>Terminal</h2>
         <p className="muted">
           DevDock reads only: directory listings, marker files (package.json scripts,
           Cargo.toml, pubspec.yaml…), Git status (read-only), and file sizes/mtimes.

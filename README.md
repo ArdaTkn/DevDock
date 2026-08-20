@@ -4,9 +4,9 @@
 
 ### **Your Local Development Command Center**
 
-*Automatically discover, understand, monitor, and launch every coding project on your computer — 100% locally & privately.*
+*Automatically discover, understand, monitor, and launch every coding project on your computer — 100% locally & privately*
 
-[![Version](https://img.shields.io/badge/version-v0.4.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock/releases)
+[![Version](https://img.shields.io/badge/version-v0.5.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock/releases)
 [![License](https://img.shields.io/badge/license-MIT-6ee7b7.svg?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-9333ea.svg?style=for-the-badge)](https://github.com/ArdaTkn/DevDock/releases)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/ArdaTkn/DevDock/release.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/ArdaTkn/DevDock/actions)
@@ -46,6 +46,12 @@ Without DevDock, answering simple questions requires constant terminal navigatio
 
 ## ✨ Core Features
 
+### 📦 Project Dependency Visualizer
+- **Interactive Library Parser:** Automatically parses `package.json` (`dependencies` & `devDependencies`), `Cargo.toml`, and `requirements.txt` into a clean visual dependency graph.
+
+### 🎨 Custom Theme Customization
+- **Curated Dark Themes:** Switch seamlessly between **Emerald Night**, **Cyberpunk Neon**, **Nordic Frost**, **Monokai Gold**, and **Dracula Pink**.
+
 ### 🟢 Active Dev Server & Port Monitoring
 - **Smart Listening Port Scanner:** Automatically detects active TCP dev servers (`localhost:3000`, `5173`, `8000`, `5432`, `6379`, etc.).
 - **Noise Filter:** Intelligently filters out background desktop applications (Spotify, Discord, Steam, Dropbox, system daemons).
@@ -55,15 +61,13 @@ Without DevDock, answering simple questions requires constant terminal navigatio
 - **Extensible Detector Architecture:** Instant recognition for **Git, Node.js, Python, Rust, Go, Flutter, .NET, Docker, Unity, and Java**.
 - **Read-Only Git Metadata:** Shows current branch, clean/dirty status, uncommitted file counts (`modified`, `staged`, `untracked`), last commit message, and remote URL.
 
-### 🐙 GitHub Integration
+### 🐙 GitHub Integration & Quick Actions
 - **Automatic Repository Parsing:** Resolves `owner/repo` from remote URLs.
 - **1-Click Quick Actions:** Direct links to **Repository**, **Issues (`/issues`)**, and **Pull Requests (`/pulls`)**.
 
-### 🏥 Project Health Audit
+### 🏥 Project Health Audit & Custom Commands
 - **Deterministic Health Scoring (0–100):** Evaluates missing dependencies (`node_modules`, `.venv`), documentation presence (`README.md`), and Git cleanliness.
 - **Visual Health Tags & Indicators:** Color-coded badges (`🟢 Ready`, `🟡 Mod`, `🔴 Unhealthy`) on project cards and detail views.
-
-### ⚡ Script Launcher & Custom Commands
 - **Detected Package Scripts:** Reads `package.json` (`npm run dev`), `Cargo.toml` (`cargo run`), and `Makefile` scripts.
 - **Custom Shell Commands:** Add your own project commands (`cargo watch`, `docker compose up`) saved locally in SQLite and trigger them in 1 click.
 

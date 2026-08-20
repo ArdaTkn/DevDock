@@ -4,9 +4,15 @@ import { Dashboard } from "./pages/Dashboard";
 import { ProjectDetail } from "./pages/ProjectDetail";
 import { Settings } from "./pages/Settings";
 import { CommandPalette } from "./components/CommandPalette";
+import { useThemeStore } from "./stores/themeStore";
 
 function Layout() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const theme = useThemeStore((s) => s.theme);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

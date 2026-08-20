@@ -353,6 +353,13 @@ pub fn remove_custom_command(app: AppHandle, id: i64) -> Result<(), ErrorDto> {
     Ok(())
 }
 
+#[tauri::command]
+pub fn get_project_dependencies(
+    path: String,
+) -> Result<Vec<crate::discovery::deps::DependencyInfo>, ErrorDto> {
+    Ok(crate::discovery::deps::DependencyParser::parse_dependencies(&path))
+}
+
 fn find_project_id(db: &AppDb, path: &str) -> crate::error::Result<Option<i64>> {
     let conn = db.conn();
     let mut stmt = conn.prepare("SELECT id FROM projects WHERE path=?1")?;

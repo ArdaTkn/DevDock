@@ -117,6 +117,11 @@ export const api = {
 
   removeCustomCommand: (id: number) =>
     invoke<void>("remove_custom_command", { id }),
+
+  getProjectDependencies: (path: string) =>
+    invoke<import("../types").DependencyInfo[]>("get_project_dependencies", {
+      path,
+    }),
 };
 
 /** Turns a Rust ErrorDto into a readable string for inline UI display. */

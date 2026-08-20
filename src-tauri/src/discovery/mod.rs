@@ -1,3 +1,4 @@
+pub mod deps;
 pub mod detector;
 pub mod scanner;
 

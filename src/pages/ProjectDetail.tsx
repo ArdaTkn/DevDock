@@ -6,6 +6,7 @@ import type {
   ProjectScript,
   GitHubRepoInfo,
   CustomCommandDto,
+  DependencyInfo,
 } from "../types";
 import { api } from "../services/api";
 import { displayPath, gitState, humanSize, timeAgo } from "../lib/format";
@@ -16,6 +17,7 @@ export function ProjectDetail() {
   const [project, setProject] = useState<Project | null>(null);
   const [health, setHealth] = useState<ProjectHealth | null>(null);
   const [scripts, setScripts] = useState<ProjectScript[]>([]);
+  const [deps, setDeps] = useState<DependencyInfo[]>([]);
   const [github, setGithub] = useState<GitHubRepoInfo | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
@@ -36,6 +38,7 @@ export function ProjectDetail() {
           const isDirty = gitState(p.git) === "dirty";
           void api.getProjectHealth(p.path, isDirty).then(setHealth);
           void api.listProjectScripts(p.path).then(setScripts);
+          void api.getProjectDependencies(p.path).then(setDeps);
           if (p.git?.remote_url) {
             void api.getGithubInfo(p.git.remote_url).then(setGithub);
           }
@@ -275,6 +278,21 @@ export function ProjectDetail() {
                 >
                   Run ↵
                 </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {deps.length > 0 && (
+        <section className="panel">
+          <h2>Dependencies & Libraries ({deps.length})</h2>
+          <div className="deps-grid">
+            {deps.map((d) => (
+              <div key={d.name} className="dep-chip">
+                <span className="dep-name">{d.name}</span>
+                <span className="dep-ver">{d.version}</span>
+                {d.is_dev && <span className="dep-dev-badge">dev</span>}
               </div>
             ))}
           </div>

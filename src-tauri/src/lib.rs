@@ -105,6 +105,7 @@ pub fn run() {
             commands::list_custom_commands,
             commands::add_custom_command,
             commands::remove_custom_command,
+            commands::get_project_dependencies,
         ])
         .run(tauri::generate_context!())
         .expect("error while running DevDock");

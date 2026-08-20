@@ -103,3 +103,9 @@ export interface CustomCommandDto {
   name: string;
   command: string;
 }
+
+export interface DependencyInfo {
+  name: string;
+  version: string;
+  is_dev: boolean;
+}
