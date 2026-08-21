@@ -1347,3 +1347,113 @@ html, body, #root {
   color: var(--muted);
   font-style: italic;
 }
+
+/* Security & Env Sentinel Panel */
+.security-subpanel {
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.security-subpanel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.security-subpanel-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+}
+.badge-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.env-missing-box {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px dashed rgba(245, 158, 11, 0.4);
+  border-radius: 6px;
+}
+.env-missing-label {
+  display: block;
+  font-size: 11.5px;
+  color: #f59e0b;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.env-keys-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.env-key-chip {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--bg-raise);
+  border: 1px solid var(--border-soft);
+}
+.env-key-chip.missing {
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #f59e0b;
+  font-weight: 600;
+}
+.env-sync-ok {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.unignored-secrets-list {
+  margin-top: 8px;
+}
+.unignored-secret-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 6px;
+  margin-top: 6px;
+}
+.unignored-file-name {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: #ef4444;
+  font-weight: 600;
+}
+.danger-text {
+  color: #ef4444;
+}
+.runtime-versions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+.runtime-card {
+  background: var(--bg-raise);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.runtime-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.runtime-details {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}

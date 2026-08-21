@@ -486,6 +486,41 @@ pub fn bulk_git_status(paths: Vec<String>) -> Result<Vec<BulkGitStatusResult>, E
     Ok(results)
 }
 
+#[tauri::command]
+pub fn check_env_diff(path: String) -> Result<crate::security::EnvDiffReport, ErrorDto> {
+    Ok(crate::security::EnvSentinel::check_env_diff(
+        std::path::Path::new(&path),
+    ))
+}
+
+#[tauri::command]
+pub fn check_secret_gitignore(
+    path: String,
+) -> Result<crate::security::GitIgnoreAuditReport, ErrorDto> {
+    Ok(crate::security::EnvSentinel::audit_gitignore(
+        std::path::Path::new(&path),
+    ))
+}
+
+#[tauri::command]
+pub fn add_to_gitignore(path: String, entry: String) -> Result<(), ErrorDto> {
+    crate::security::EnvSentinel::add_to_gitignore(std::path::Path::new(&path), &entry).map_err(
+        |e| ErrorDto {
+            message: e.to_string(),
+            hint: None,
+        },
+    )
+}
+
+#[tauri::command]
+pub fn check_runtime_versions(
+    path: String,
+) -> Result<Vec<crate::security::RuntimeVersionInfo>, ErrorDto> {
+    Ok(crate::security::EnvSentinel::check_runtime_versions(
+        std::path::Path::new(&path),
+    ))
+}
+
 fn find_project_id(db: &AppDb, path: &str) -> crate::error::Result<Option<i64>> {
     let conn = db.conn();
     let mut stmt = conn.prepare("SELECT id FROM projects WHERE path=?1")?;

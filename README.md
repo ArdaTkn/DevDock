@@ -8,10 +8,10 @@
 
 *Automatically discover, understand, monitor, and launch every coding project on your computer — 100% locally & privately*
 
-[![Version](https://img.shields.io/badge/version-v0.6.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock/releases)
+[![Version](https://img.shields.io/badge/version-v0.7.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock)
 [![License](https://img.shields.io/badge/license-MIT-6ee7b7.svg?style=for-the-badge)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-9333ea.svg?style=for-the-badge)](https://github.com/ArdaTkn/DevDock/releases)
-
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-9333ea.svg?style=for-the-badge)](https://github.com/ArdaTkn/DevDock)
+[![CI Status](https://img.shields.io/github/actions/workflow/status/ArdaTkn/DevDock/ci.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/ArdaTkn/DevDock/actions)
 
 <p align="center">
   <a href="#-the-problem">The Problem</a> •
@@ -40,6 +40,7 @@ Without DevDock, answering simple questions requires constant terminal navigatio
 - *Where is that old Flutter app or Rust CLI script I wrote last year?*
 - *Which local ports (`localhost:3000`, `5173`, `8000`) are active right now?*
 - *Do I have uncommitted Git changes before pushing?*
+- *Is this project missing `.env` keys from `.env.example` or leaking keys to Git?*
 - *Is this project missing `node_modules` or `.venv` dependencies?*
 
 **DevDock is your local development command center.** It automatically discovers your projects, analyzes their tech stack, monitors active dev servers, audits health, and lets you open them in your preferred editor or terminal with a single click.
@@ -48,8 +49,18 @@ Without DevDock, answering simple questions requires constant terminal navigatio
 
 ## ✨ Core Features
 
+### 🛡️ Environment Sentinel & Secret Leak Prevention
+- **`.env.example` vs `.env` Diff Checker:** Automatically extracts environment variable keys and warns you when required template keys are missing from your local `.env`. (Values are **never** read or stored for 100% privacy).
+- **GitIgnore Secret Leak Auditor:** Scans for sensitive files (`.env`, `id_rsa`, `*.key`, `credentials.json`) and flags any unignored credentials with a 1-click **"+ Add to .gitignore"** button.
+- **Runtime Toolchain Inspector:** Reads `.nvmrc`, `.python-version`, and `rust-toolchain.toml` to detect version mismatches against your installed runtime versions.
+
+### 📁 Workspaces & Bulk Git Synchronization
+- **Custom Project Workspaces:** Group related repositories into color-coded collections (e.g. *Client Work*, *Microservices*, *Open Source*).
+- **Bulk `⬇️ Pull All`:** Synchronize and update all Git repositories in your active workspace simultaneously with animated background progress and detailed result reports.
+- **Bulk `📋 Git Audit`:** Audit uncommitted changes across all workspace projects in one overview.
+
 ### 📦 Project Dependency Visualizer
-- **Interactive Library Parser:** Automatically parses `package.json` (`dependencies` & `devDependencies`), `Cargo.toml`, and `requirements.txt` into a clean visual dependency graph.
+- **Interactive Library Parser:** Automatically parses `package.json` (`dependencies` & `devDependencies`), `Cargo.toml`, and `requirements.txt` into a clean visual dependency list.
 
 ### 🎨 Custom Theme Customization
 - **Curated Dark Themes:** Switch seamlessly between **Emerald Night**, **Cyberpunk Neon**, **Nordic Frost**, **Monokai Gold**, and **Dracula Pink**.
@@ -78,7 +89,7 @@ Without DevDock, answering simple questions requires constant terminal navigatio
 - **Auto-Saved Markdown Notes:** Keep project TODOs, notes, and reminders saved per project in local SQLite.
 - **Command Palette (`⌘K` / `Ctrl+K`):** Global instant search for projects, actions, and settings.
 - **Recently Opened Strip:** Quick launcher for recently opened projects.
-- **Configurable Editors & Terminals:** Auto-detects VS Code, Cursor, Zed, Windsurf, Sublime, iTerm2, Kitty, Alacritty, Warp, Terminal.app, etc.
+- **Configurable Editors & Terminals:** Auto-detects Antigravity IDE, Cursor, VS Code, Zed, Windsurf, JetBrains suite (WebStorm, PyCharm, IntelliJ, CLion, RustRover), iTerm2, Kitty, Alacritty, Warp, Terminal.app, etc.
 
 ---
 
@@ -118,31 +129,28 @@ devdock help
 ```
 
 > [!TIP]
-> Once linked with `npm link`, you never need to navigate to the repo directory or run complex commands again. Just type `devdock` in any shell (`zsh`, `bash`, `fish`) to launch your command center!
+> After running `npm link` once, simply typing `devdock` in any terminal opens DevDock directly.
 
 ---
 
-## 🏗️ Architecture
-
-DevDock is built using **Tauri 2**, linking a lightweight React 18 frontend with a high-performance Rust core via typed IPC:
+## 🏛️ Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│              React UI (Frontend - Renderer)             │
-│   • Vite + React 18 + TypeScript (Strict)               │
-│   • Zustand (State Management)                          │
-│   • Modern & Compact Plain CSS (Dark Theme UI)          │
+│              Frontend: React 18 + TypeScript + Vite     │
+│   (Zustand State, Lucide Icons, Modern Dark UI Themes) │
 └────────────────────────────┬────────────────────────────┘
-                             │  Tauri IPC (Typed Commands & Events)
+                             │ Tauri 2 IPC Commands
 ┌────────────────────────────▼────────────────────────────┐
-│                    Rust Core (Backend)                  │
-│   • discovery/  (Async multi-threaded directory walker) │
+│                  Backend: Rust + Tauri 2                │
+│   • discovery/  (Smart parallel directory traversal)    │
+│   • security/   (.env diffing & secret leak prevention) │
 │   • git/        (Read-only Git CLI porcelain parser)    │
 │   • processes/  (Smart filtering dev listening ports)   │
 │   • docker/     (Docker container inspector)            │
 │   • health/     (Deterministic project health audit)   │
 │   • system/     (Safe OS launcher & script runner)      │
-│   • storage/    (Embedded SQLite - rusqlite)             │
+│   • storage/    (Embedded SQLite - rusqlite)            │
 │   • watch/      (Incremental FS events - notify crate)  │
 └────────────────────────────┬────────────────────────────┘
                     ┌────────▼────────┐
@@ -159,7 +167,7 @@ For full architecture details, check out [`docs/ARCHITECTURE.md`](docs/ARCHITECT
 - **Local-First & Offline:** DevDock works 100% offline. No cloud, no external servers, no user accounts.
 - **No Source Code Uploads:** DevDock scans only file/folder names, marker files (like `package.json` script keys), and Git status. Your source code, `.env` files, and secrets are **never** read or transmitted.
 - **Zero Telemetry:** No tracking, no background pinging, no analytics.
-- **Safe Process Spawning:** Every editor, terminal, or script launcher uses explicit argv (`Command::new(bin).args(...)`) rather than raw shell execution, preventing shell-injection vulnerabilities.
+- **Safe Process Spawning:** Every editor, terminal, or script runner uses explicit argv (`Command::new(bin).args(...)`) rather than raw shell execution, preventing shell-injection vulnerabilities.
 
 Read our full [Security Policy](SECURITY.md) and [`docs/SECURITY.md`](docs/SECURITY.md).
 
@@ -172,9 +180,9 @@ Read our full [Security Policy](SECURITY.md) and [`docs/SECURITY.md`](docs/SECUR
 - [x] **v0.3.0** — Smart Listening Port scanner (`localhost:3000`, `5173`), Docker container inspector, deterministic project health audit.
 - [x] **v0.4.0** — GitHub integration, custom project tags, auto-saved Markdown notes, configurable custom shell commands.
 - [x] **v0.5.0** — Project dependency visualizer, 6 custom dark themes, global terminal CLI (`devdock`, `devdock update`, `devdock ports`).
-- [x] **v0.6.0** — Workspaces & Project Collections, Bulk Git sync ("⬇️ Pull All", "📋 Git Audit"), workspace project manager.
-- [ ] **v0.7.0** *(Next)* — `.env.example` vs `.env` diff inspector, GitIgnore secret leak prevention, runtime toolchain version warnings.
-- [ ] **v0.8.0** — Disk Space Hog visualizer, 1-click safe build cache cleaner (`node_modules`, `target`), stale project detector.
+- [x] **v0.6.0** — Workspaces & Project Collections, Bulk Git sync ("⬇️ Pull All", "📋 Git Audit"), in-app workspace manager.
+- [x] **v0.7.0** — `.env.example` vs `.env` diff inspector, GitIgnore secret leak prevention, runtime toolchain version warnings.
+- [ ] **v0.8.0** *(Next)* — Disk Space Hog visualizer, 1-click safe build cache cleaner (`node_modules`, `target`, `.dart_tool`), stale project detector.
 - [ ] **v0.9.0** — macOS Menu Bar & Windows Tray popover widget, global `⌥ Space` floating HUD, dev server crash notifications.
 - [ ] **v1.0.0** — Privacy-first offline local AI (Ollama / Apple Neural Engine), semantic codebase search, interactive architecture graph.
 

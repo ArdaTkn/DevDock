@@ -7,6 +7,7 @@ pub mod git;
 pub mod health;
 pub mod models;
 pub mod processes;
+pub mod security;
 pub mod storage;
 pub mod system;
 pub mod watch;
@@ -114,6 +115,10 @@ pub fn run() {
             commands::set_project_workspaces,
             commands::bulk_git_pull,
             commands::bulk_git_status,
+            commands::check_env_diff,
+            commands::check_secret_gitignore,
+            commands::add_to_gitignore,
+            commands::check_runtime_versions,
         ])
         .run(tauri::generate_context!())
         .expect("error while running DevDock");

@@ -8,6 +8,9 @@ import type {
   CustomCommandDto,
   DependencyInfo,
   WorkspaceDto,
+  EnvDiffReport,
+  GitIgnoreAuditReport,
+  RuntimeVersionInfo,
 } from "../types";
 import { api } from "../services/api";
 import { displayPath, gitState, humanSize, timeAgo } from "../lib/format";
@@ -26,6 +29,9 @@ export function ProjectDetail() {
   const [customCmds, setCustomCmds] = useState<CustomCommandDto[]>([]);
   const [allWorkspaces, setAllWorkspaces] = useState<WorkspaceDto[]>([]);
   const [projectWsIds, setProjectWsIds] = useState<number[]>([]);
+  const [envReport, setEnvReport] = useState<EnvDiffReport | null>(null);
+  const [gitignoreReport, setGitignoreReport] = useState<GitIgnoreAuditReport | null>(null);
+  const [runtimeVersions, setRuntimeVersions] = useState<RuntimeVersionInfo[]>([]);
   const [newCmdName, setNewCmdName] = useState("");
   const [newCmdStr, setNewCmdStr] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -50,12 +56,26 @@ export function ProjectDetail() {
           void api.listCustomCommands(pid).then(setCustomCmds);
           void api.listWorkspaces().then(setAllWorkspaces);
           void api.getProjectWorkspaces(pid).then(setProjectWsIds);
+          void api.checkEnvDiff(p.path).then(setEnvReport);
+          void api.checkSecretGitIgnore(p.path).then(setGitignoreReport);
+          void api.checkRuntimeVersions(p.path).then(setRuntimeVersions);
         }
       } catch (e) {
         setError(String(e));
       }
     })();
   }, [id]);
+
+  const handleAddToGitignore = async (entry: string) => {
+    if (!project) return;
+    try {
+      await api.addToGitIgnore(project.path, entry);
+      const rep = await api.checkSecretGitIgnore(project.path);
+      setGitignoreReport(rep);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleToggleWorkspace = async (wsId: number) => {
     if (!id) return;
@@ -308,6 +328,113 @@ export function ProjectDetail() {
           )}
         </section>
       )}
+
+      {/* Environment Sentinel & Secret Leak Prevention */}
+      <section className="panel">
+        <h2>🛡️ Environment & Security Sentinel</h2>
+        <p className="muted" style={{ marginBottom: "16px" }}>
+          Inspect environment template keys, prevent accidental secret leaks in Git, and verify runtime toolchain versions.
+        </p>
+
+        {/* 1. Env Diff Checker */}
+        <div className="security-subpanel">
+          <div className="security-subpanel-header">
+            <span className="security-subpanel-title">📄 Environment Variables (.env) Status</span>
+            {envReport?.has_template ? (
+              envReport.missing_keys.length === 0 ? (
+                <span className="badge-clean">✅ All keys synced with {envReport.template_file}</span>
+              ) : (
+                <span className="badge-dirty">⚠️ {envReport.missing_keys.length} Missing Key(s)</span>
+              )
+            ) : (
+              <span className="muted small">No .env.example template detected</span>
+            )}
+          </div>
+
+          {envReport?.missing_keys && envReport.missing_keys.length > 0 && (
+            <div className="env-missing-box">
+              <span className="env-missing-label">Missing keys in local {envReport.local_env_file ?? ".env"}:</span>
+              <div className="env-keys-list">
+                {envReport.missing_keys.map((k) => (
+                  <span key={k} className="env-key-chip missing">
+                    {k}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {envReport?.has_template && envReport.missing_keys.length === 0 && (
+            <div className="env-sync-ok">
+              All {envReport.template_keys.length} variable keys from <code>{envReport.template_file}</code> exist in your local environment file. (Values are never inspected for 100% privacy).
+            </div>
+          )}
+        </div>
+
+        {/* 2. GitIgnore Secret Leak Checker */}
+        {gitignoreReport && (
+          <div className="security-subpanel" style={{ marginTop: "14px" }}>
+            <div className="security-subpanel-header">
+              <span className="security-subpanel-title">🔒 Git Secret Leak Prevention</span>
+              {gitignoreReport.unignored_sensitive_files.length === 0 ? (
+                <span className="badge-clean">✅ No unignored secrets found</span>
+              ) : (
+                <span className="badge-danger">🚨 {gitignoreReport.unignored_sensitive_files.length} Unignored Sensitive File(s)</span>
+              )}
+            </div>
+
+            {gitignoreReport.unignored_sensitive_files.length > 0 ? (
+              <div className="unignored-secrets-list">
+                <p className="danger-text small">
+                  The following sensitive credential/env files are present in the project directory but are <b>NOT</b> ignored in <code>.gitignore</code>:
+                </p>
+                {gitignoreReport.unignored_sensitive_files.map((file) => (
+                  <div key={file} className="unignored-secret-row">
+                    <span className="unignored-file-name">⚠️ {file}</span>
+                    <button
+                      className="btn btn-sm btn-danger-soft"
+                      onClick={() => void handleAddToGitignore(file)}
+                    >
+                      + Add to .gitignore
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="muted small" style={{ marginTop: "6px" }}>
+                {gitignoreReport.sensitive_files_found.length > 0
+                  ? `All ${gitignoreReport.sensitive_files_found.length} detected sensitive file(s) are properly excluded by .gitignore.`
+                  : "No sensitive key/env files detected in root directory."}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 3. Runtime Version Mismatch Inspector */}
+        {runtimeVersions.length > 0 && (
+          <div className="security-subpanel" style={{ marginTop: "14px" }}>
+            <div className="security-subpanel-header">
+              <span className="security-subpanel-title">⚙️ Toolchain & Runtime Versions</span>
+            </div>
+            <div className="runtime-versions-grid">
+              {runtimeVersions.map((rv) => (
+                <div key={rv.toolchain} className="runtime-card">
+                  <div className="runtime-header">
+                    <b>{rv.toolchain}</b>
+                    <span className={rv.is_matched ? "badge-clean" : "badge-dirty"}>
+                      {rv.is_matched ? "✅ Version Match" : "⚠️ Version Mismatch"}
+                    </span>
+                  </div>
+                  <div className="runtime-details">
+                    <div>Required: <code>{rv.required_version}</code> (via {rv.source_file})</div>
+                    <div>Installed: <code>{rv.detected_version ?? "Not detected"}</code></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
 
       {scripts.length > 0 && (
         <section className="panel">

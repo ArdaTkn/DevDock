@@ -170,3 +170,48 @@ fn scan_fixtures_discovers_projects() {
         summary.total
     );
 }
+
+#[test]
+fn test_env_sentinel_diff_detection() {
+    let tmp = tempfile::tempdir().expect("tempdir");
+    let p = tmp.path();
+
+    // Create .env.example with 3 keys
+    std::fs::write(
+        p.join(".env.example"),
+        "DATABASE_URL=postgres://...\nPORT=3000\nAPI_SECRET=\n# Comment\n",
+    )
+    .unwrap();
+
+    // Create .env with 2 keys (missing API_SECRET)
+    std::fs::write(p.join(".env"), "DATABASE_URL=postgres://...\nPORT=3000\n").unwrap();
+
+    let report = devdock_lib::security::EnvSentinel::check_env_diff(p);
+    assert!(report.has_template);
+    assert_eq!(report.template_file.as_deref(), Some(".env.example"));
+    assert!(report.has_local_env);
+    assert_eq!(report.missing_keys, vec!["API_SECRET".to_string()]);
+}
+
+#[test]
+fn test_env_sentinel_gitignore_audit() {
+    let tmp = tempfile::tempdir().expect("tempdir");
+    let p = tmp.path();
+
+    // Create sensitive file
+    std::fs::write(p.join(".env"), "SECRET=123").unwrap();
+    std::fs::write(p.join("id_rsa"), "KEY").unwrap();
+
+    // Create .gitignore with only .env
+    std::fs::write(p.join(".gitignore"), ".env\n").unwrap();
+
+    let audit = devdock_lib::security::EnvSentinel::audit_gitignore(p);
+    assert!(audit.has_gitignore);
+    assert_eq!(audit.unignored_sensitive_files, vec!["id_rsa".to_string()]);
+
+    // Add id_rsa to .gitignore
+    devdock_lib::security::EnvSentinel::add_to_gitignore(p, "id_rsa").unwrap();
+
+    let audit2 = devdock_lib::security::EnvSentinel::audit_gitignore(p);
+    assert!(audit2.unignored_sensitive_files.is_empty());
+}

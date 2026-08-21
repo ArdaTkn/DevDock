@@ -149,6 +149,18 @@ export const api = {
 
   bulkGitStatus: (paths: string[]) =>
     invoke<import("../types").BulkGitStatusResult[]>("bulk_git_status", { paths }),
+
+  checkEnvDiff: (path: string) =>
+    invoke<import("../types").EnvDiffReport>("check_env_diff", { path }),
+
+  checkSecretGitIgnore: (path: string) =>
+    invoke<import("../types").GitIgnoreAuditReport>("check_secret_gitignore", { path }),
+
+  addToGitIgnore: (path: string, entry: string) =>
+    invoke<void>("add_to_gitignore", { path, entry }),
+
+  checkRuntimeVersions: (path: string) =>
+    invoke<import("../types").RuntimeVersionInfo[]>("check_runtime_versions", { path }),
 };
 
 /** Turns a Rust ErrorDto into a readable string for inline UI display. */

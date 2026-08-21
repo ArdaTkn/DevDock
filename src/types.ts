@@ -128,3 +128,28 @@ export interface BulkGitStatusResult {
   branch: string;
   uncommitted_count: number;
 }
+
+export interface EnvDiffReport {
+  has_template: boolean;
+  template_file: string | null;
+  has_local_env: boolean;
+  local_env_file: string | null;
+  template_keys: string[];
+  local_keys: string[];
+  missing_keys: string[];
+  extra_keys: string[];
+}
+
+export interface GitIgnoreAuditReport {
+  has_gitignore: boolean;
+  sensitive_files_found: string[];
+  unignored_sensitive_files: string[];
+}
+
+export interface RuntimeVersionInfo {
+  toolchain: string;
+  required_version: string;
+  detected_version: string | null;
+  source_file: string;
+  is_matched: boolean;
+}
