@@ -36,6 +36,7 @@ export function Dashboard() {
   const [wsName, setWsName] = useState("");
   const [wsColor, setWsColor] = useState("#10b981");
   const [bulkPulling, setBulkPulling] = useState(false);
+  const [bulkAuditing, setBulkAuditing] = useState(false);
   const [bulkPullResults, setBulkPullResults] = useState<BulkGitResult[] | null>(null);
   const [bulkStatusList, setBulkStatusList] = useState<BulkGitStatusResult[] | null>(null);
 
@@ -137,11 +138,15 @@ export function Dashboard() {
   const handleBulkStatusAudit = async () => {
     const paths = filtered.filter((p) => p.git?.is_git).map((p) => p.path);
     if (paths.length === 0) return;
+    setBulkAuditing(true);
+    setBulkStatusList(null);
     try {
       const res = await api.bulkGitStatus(paths);
       setBulkStatusList(res);
     } catch (e) {
       console.error(e);
+    } finally {
+      setBulkAuditing(false);
     }
   };
 
@@ -239,22 +244,55 @@ export function Dashboard() {
           )}
           <button
             className="btn ws-action-btn"
-            disabled={bulkPulling || filtered.length === 0}
+            disabled={bulkPulling || bulkAuditing || filtered.length === 0}
             onClick={() => void handleBulkPull()}
             title="Git pull all projects in current view"
           >
-            {bulkPulling ? "Pulling…" : "⬇️ Pull All"}
+            {bulkPulling ? (
+              <>
+                <span className="spinner-mini" /> Pulling…
+              </>
+            ) : (
+              "⬇️ Pull All"
+            )}
           </button>
           <button
             className="btn ws-action-btn"
-            disabled={filtered.length === 0}
+            disabled={bulkPulling || bulkAuditing || filtered.length === 0}
             onClick={() => void handleBulkStatusAudit()}
             title="Audit uncommitted changes across all workspace projects"
           >
-            📋 Git Audit
+            {bulkAuditing ? (
+              <>
+                <span className="spinner-mini" /> Auditing…
+              </>
+            ) : (
+              "📋 Git Audit"
+            )}
           </button>
         </div>
       </div>
+
+      {/* Interactive Bulk Operation Loading Modal */}
+      {(bulkPulling || bulkAuditing) && (
+        <div className="modal-overlay">
+          <div className="modal-content loading-modal">
+            <div className="loading-spinner-large" />
+            <h3>
+              {bulkPulling ? "⬇️ Synchronizing Git Repositories..." : "📋 Auditing Workspace Repositories..."}
+            </h3>
+            <p className="muted">
+              {bulkPulling
+                ? `Running git pull across ${filtered.filter((p) => p.git?.is_git).length} repositories. Fetching latest remote branches and updating working tree...`
+                : `Inspecting branches, modified files, and uncommitted changes across ${filtered.filter((p) => p.git?.is_git).length} repositories...`}
+            </p>
+            <div className="loading-pulse-bar">
+              <div className="loading-pulse-fill" />
+            </div>
+            <div className="loading-tip">This runs asynchronously in the background without freezing the UI.</div>
+          </div>
+        </div>
+      )}
 
       {/* New Workspace Modal */}
       {showWsModal && (
