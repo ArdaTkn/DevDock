@@ -8,7 +8,7 @@
 
 *Automatically discover, understand, monitor, and launch every coding project on your computer — 100% locally & privately*
 
-[![Version](https://img.shields.io/badge/version-v0.5.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock/releases)
+[![Version](https://img.shields.io/badge/version-v0.6.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock/releases)
 [![License](https://img.shields.io/badge/license-MIT-6ee7b7.svg?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-9333ea.svg?style=for-the-badge)](https://github.com/ArdaTkn/DevDock/releases)
 
