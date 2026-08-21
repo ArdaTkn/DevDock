@@ -10,6 +10,7 @@ pub mod processes;
 pub mod security;
 pub mod storage;
 pub mod system;
+pub mod tray;
 pub mod watch;
 
 use std::sync::{Arc, Mutex};
@@ -65,6 +66,9 @@ pub fn run() {
 
             let watcher = crate::watch::ProjectWatcher::new(app.handle().clone(), scan_paths).ok();
 
+            // Initialize Menu Bar / Tray icon
+            let _ = crate::tray::setup_tray(app.handle());
+
             app.manage(commands::AppState {
                 db,
                 scan_handle: Mutex::new(None),
@@ -92,6 +96,7 @@ pub fn run() {
             commands::list_terminals,
             commands::get_terminal_pref,
             commands::set_terminal_pref,
+            commands::toggle_window,
             commands::list_listening_ports,
             commands::list_docker_containers,
             commands::get_project_health,

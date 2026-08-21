@@ -170,6 +170,9 @@ export const api = {
 
   getDiskHogsReport: (paths: string[]) =>
     invoke<import("../types").DiskHogReport>("get_disk_hogs_report", { paths }),
+
+  toggleWindow: () =>
+    invoke<void>("toggle_window"),
 };
 
 /** Turns a Rust ErrorDto into a readable string for inline UI display. */

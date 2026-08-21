@@ -208,13 +208,28 @@ export function Settings() {
       </section>
 
       <section className="panel">
+        <h2>🧭 System Tray & Menu Bar</h2>
+        <p className="muted">
+          DevDock runs in your macOS Menu Bar / Windows System Tray for instant background access.
+        </p>
+        <dl className="kv" style={{ marginTop: "10px" }}>
+          <dt>Menu Bar Status</dt>
+          <dd>🟢 Active (Click tray icon to toggle DevDock)</dd>
+          <dt>Quick Actions</dt>
+          <dd>Right-click tray icon to show window, hide, or quit</dd>
+          <dt>Command Palette</dt>
+          <dd>Global search and quick actions via <code>⌘K</code> / <code>Ctrl+K</code></dd>
+        </dl>
+      </section>
+
+      <section className="panel">
         <h2>Open actions</h2>
         <p className="muted">
-          <b>Open Editor</b> opens the first detected editor (VS Code, Cursor, Zed).
+          <b>Open Editor</b> opens the first detected editor (Antigravity IDE, Cursor, VS Code, Zed).
           <br />
-          <b>Open Terminal</b> opens Terminal.app on macOS.
+          <b>Open Terminal</b> opens your preferred terminal (iTerm2, Warp, Ghostty, Terminal.app).
           <br />
-          <b>Open</b> reveals the folder in your file manager.
+          <b>Open Folder</b> reveals the directory in your system file manager.
         </p>
       </section>
 

@@ -159,6 +159,21 @@ pub fn set_terminal_pref(app: AppHandle, pref: Option<String>) -> Result<(), Err
 }
 
 #[tauri::command]
+pub fn toggle_window(app: AppHandle) -> Result<(), ErrorDto> {
+    use tauri::Manager;
+    if let Some(window) = app.get_webview_window("main") {
+        if window.is_visible().unwrap_or(false) {
+            let _ = window.hide();
+        } else {
+            let _ = window.show();
+            let _ = window.unminimize();
+            let _ = window.set_focus();
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
 pub fn open_project_editor(app: AppHandle, path: String) -> Result<(), ErrorDto> {
     if let Some(id) = find_project_id(&state(&app).db, &path)? {
         let _ = ProjectRepo::touch_recent(&state(&app).db, id);

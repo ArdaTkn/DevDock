@@ -8,7 +8,7 @@
 
 *Automatically discover, understand, monitor, and launch every coding project on your computer — 100% locally & privately*
 
-[![Version](https://img.shields.io/badge/version-v0.8.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock)
+[![Version](https://img.shields.io/badge/version-v0.9.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock)
 [![License](https://img.shields.io/badge/license-MIT-6ee7b7.svg?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-9333ea.svg?style=for-the-badge)](https://github.com/ArdaTkn/DevDock)
 [![CI Status](https://img.shields.io/github/actions/workflow/status/ArdaTkn/DevDock/ci.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/ArdaTkn/DevDock/actions)
@@ -49,6 +49,12 @@ Without DevDock, answering simple questions requires constant terminal navigatio
 ---
 
 ## ✨ Core Features
+
+### 🧭 macOS Menu Bar & Windows System Tray / Quick HUD
+- **Background Menu Bar Resident:** DevDock sits in your macOS menu bar or Windows system tray for zero-friction access.
+- **1-Click Window Toggle:** Left-click the menu bar icon to instantly show or hide DevDock.
+- **Tray Quick Menu:** Right-click tray menu for rapid actions (Show Window, Hide, Quit).
+- **Command Palette HUD:** Instant search across projects, tech stacks, and actions via `⌘K` / `Ctrl+K`.
 
 ### 🧹 Disk Space Hog Visualizer & Safe Cache Janitor
 - **Interactive Disk Footprint Inspector:** Accurately calculates project footprint and isolates disposable build cache folders (`node_modules`, `target`, `.dart_tool`, `build`, `.venv`, `.next`, `dist`, `Pods`, `DerivedData`).
@@ -190,8 +196,8 @@ Read our full [Security Policy](SECURITY.md) and [`docs/SECURITY.md`](docs/SECUR
 - [x] **v0.6.0** — Workspaces & Project Collections, Bulk Git sync ("⬇️ Pull All", "📋 Git Audit"), in-app workspace manager.
 - [x] **v0.7.0** — `.env.example` vs `.env` diff inspector, GitIgnore secret leak prevention, runtime toolchain version warnings.
 - [x] **v0.8.0** — Disk Space Hog visualizer, 1-click safe build cache cleaner (`node_modules`, `target`, `.dart_tool`), stale project detector.
-- [ ] **v0.9.0** *(Next)* — macOS Menu Bar & Windows Tray popover widget, global `⌥ Space` floating HUD, dev server crash notifications.
-- [ ] **v1.0.0** — Privacy-first offline local AI (Ollama / Apple Neural Engine), semantic codebase search, interactive architecture graph.
+- [x] **v0.9.0** — macOS Menu Bar & Windows Tray popover widget, 1-click toggle, quick tray menu.
+- [ ] **v1.0.0** *(Next - Final Milestone)* — Privacy-first offline local AI, semantic codebase search, interactive architecture graph.
 
 Check out [`docs/PLAN.md`](docs/PLAN.md) for full roadmap details.
 
