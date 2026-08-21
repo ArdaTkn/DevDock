@@ -1457,3 +1457,186 @@ html, body, #root {
   color: var(--muted);
   line-height: 1.5;
 }
+
+/* Disk Usage & Cache Janitor Styles */
+.cache-overview-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+}
+.cache-metric-card {
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cache-metric-card.highlight {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.05);
+}
+.cache-metric-label {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.cache-metric-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.cache-metric-card.highlight .cache-metric-value {
+  color: #ef4444;
+}
+.cache-folders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cache-folder-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+}
+.cache-folder-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cache-folder-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+}
+.cache-folder-desc {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.cache-folder-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cache-folder-size {
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  font-weight: 600;
+  color: #ef4444;
+}
+
+/* Disk Space Hog Modal */
+.hog-modal {
+  max-width: 680px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+.hog-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.hog-stat-card {
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hog-stat-label {
+  font-size: 11px;
+  color: var(--muted);
+}
+.hog-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+.hog-stat-value.highlight {
+  color: #ef4444;
+}
+.hog-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: 380px;
+  padding-right: 4px;
+}
+.hog-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+}
+.hog-row.stale {
+  border-left: 3px solid #f59e0b;
+}
+.hog-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 70%;
+}
+.hog-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hog-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+}
+.badge-stale {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  font-size: 10.5px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+.hog-path {
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hog-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+.hog-chip {
+  font-size: 10.5px;
+  background: var(--bg-raise);
+  border: 1px solid var(--border-soft);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--muted);
+}
+.hog-action-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hog-reclaim-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #ef4444;
+}

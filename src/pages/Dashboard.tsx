@@ -40,6 +40,9 @@ export function Dashboard() {
   const [bulkAuditing, setBulkAuditing] = useState(false);
   const [bulkPullResults, setBulkPullResults] = useState<BulkGitResult[] | null>(null);
   const [bulkStatusList, setBulkStatusList] = useState<BulkGitStatusResult[] | null>(null);
+  const [diskHogsReport, setDiskHogsReport] = useState<import("../types").DiskHogReport | null>(null);
+  const [scanningHogs, setScanningHogs] = useState(false);
+  const [cleaningHog, setCleaningHog] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -151,6 +154,55 @@ export function Dashboard() {
     }
   };
 
+  const handleScanDiskHogs = async () => {
+    const paths = filtered.map((p) => p.path);
+    if (paths.length === 0) return;
+    setScanningHogs(true);
+    setDiskHogsReport(null);
+    try {
+      const res = await api.getDiskHogsReport(paths);
+      setDiskHogsReport(res);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setScanningHogs(false);
+    }
+  };
+
+  const handleCleanHogFolder = async (projectPath: string, folderName: string) => {
+    setCleaningHog(true);
+    try {
+      await api.cleanCacheFolder(projectPath, folderName);
+      const paths = filtered.map((p) => p.path);
+      const res = await api.getDiskHogsReport(paths);
+      setDiskHogsReport(res);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCleaningHog(false);
+    }
+  };
+
+  const handleCleanAllStaleCaches = async () => {
+    if (!diskHogsReport) return;
+    setCleaningHog(true);
+    try {
+      const staleItems = diskHogsReport.items.filter((item) => item.is_stale);
+      for (const item of staleItems) {
+        for (const f of item.cache_folders) {
+          await api.cleanCacheFolder(item.project_path, f.name);
+        }
+      }
+      const paths = filtered.map((p) => p.path);
+      const res = await api.getDiskHogsReport(paths);
+      setDiskHogsReport(res);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCleaningHog(false);
+    }
+  };
+
   const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
 
   return (
@@ -242,7 +294,7 @@ export function Dashboard() {
           </button>
           <button
             className="btn ws-action-btn"
-            disabled={bulkPulling || bulkAuditing || filtered.length === 0}
+            disabled={bulkPulling || bulkAuditing || scanningHogs || filtered.length === 0}
             onClick={() => void handleBulkStatusAudit()}
             title="Audit uncommitted changes across all workspace projects"
           >
@@ -254,8 +306,106 @@ export function Dashboard() {
               "📋 Git Audit"
             )}
           </button>
+          <button
+            className="btn ws-action-btn"
+            disabled={bulkPulling || bulkAuditing || scanningHogs || filtered.length === 0}
+            onClick={() => void handleScanDiskHogs()}
+            title="Scan build cache and find biggest disk space hogs"
+          >
+            {scanningHogs ? (
+              <>
+                <span className="spinner-mini" /> Scanning…
+              </>
+            ) : (
+              "🧹 Disk Janitor"
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Disk Space Hog & Janitor Modal */}
+      {diskHogsReport && (
+        <div className="modal-overlay" onClick={() => setDiskHogsReport(null)}>
+          <div className="modal-content hog-modal" onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h3>🧹 Disk Space Hog Visualizer</h3>
+              {diskHogsReport.stale_projects_count > 0 && (
+                <button
+                  className="btn btn-sm btn-danger-soft"
+                  disabled={cleaningHog}
+                  onClick={() => void handleCleanAllStaleCaches()}
+                >
+                  {cleaningHog ? "Cleaning…" : `Clean All Stale (${diskHogsReport.stale_projects_count} projects)`}
+                </button>
+              )}
+            </div>
+            <p className="muted" style={{ fontSize: "12px", margin: "6px 0 14px 0" }}>
+              Scanned <b>{filtered.length}</b> projects — Total reclaimable cache across workspace: <b>{diskHogsReport.total_reclaimable_human_size}</b>.
+            </p>
+
+            <div className="hog-summary-cards">
+              <div className="hog-stat-card">
+                <span className="hog-stat-label">Reclaimable Storage</span>
+                <span className="hog-stat-value highlight">{diskHogsReport.total_reclaimable_human_size}</span>
+              </div>
+              <div className="hog-stat-card">
+                <span className="hog-stat-label">Stale Projects (&gt;90d)</span>
+                <span className="hog-stat-value">{diskHogsReport.stale_projects_count}</span>
+              </div>
+              <div className="hog-stat-card">
+                <span className="hog-stat-label">Projects with Cache</span>
+                <span className="hog-stat-value">{diskHogsReport.items.length}</span>
+              </div>
+            </div>
+
+            <div className="hog-list">
+              {diskHogsReport.items.map((item) => (
+                <div key={item.project_path} className={`hog-row ${item.is_stale ? "stale" : ""}`}>
+                  <div className="hog-info">
+                    <div className="hog-name-row">
+                      <span className="hog-name">{item.project_name}</span>
+                      {item.is_stale && <span className="badge-stale">⏰ Stale (&gt;90d inactive)</span>}
+                    </div>
+                    <span className="hog-path">{item.project_path}</span>
+                    <div className="hog-chips">
+                      {item.cache_folders.map((f) => (
+                        <span key={f.name} className="hog-chip">
+                          {f.name} ({f.human_size})
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="hog-action-group">
+                    <span className="hog-reclaim-badge">{item.reclaimable_human_size}</span>
+                    <button
+                      className="btn btn-sm danger"
+                      disabled={cleaningHog}
+                      onClick={async () => {
+                        for (const f of item.cache_folders) {
+                          await handleCleanHogFolder(item.project_path, f.name);
+                        }
+                      }}
+                    >
+                      Clean Cache
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {diskHogsReport.items.length === 0 && (
+                <div className="muted" style={{ textAlign: "center", padding: "20px" }}>
+                  🎉 No heavy cache folders detected! Your disk is already optimized.
+                </div>
+              )}
+            </div>
+
+            <div className="modal-buttons" style={{ marginTop: "16px" }}>
+              <button className="btn primary" onClick={() => setDiskHogsReport(null)}>
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Interactive Bulk Operation Loading Modal */}
       {(bulkPulling || bulkAuditing) && (

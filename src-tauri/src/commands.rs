@@ -521,6 +521,32 @@ pub fn check_runtime_versions(
     ))
 }
 
+#[tauri::command]
+pub fn get_project_cache_info(path: String) -> Result<crate::system::ProjectCacheReport, ErrorDto> {
+    Ok(crate::system::CacheJanitor::scan_project_cache(
+        std::path::Path::new(&path),
+    ))
+}
+
+#[tauri::command]
+pub fn clean_cache_folder(project_path: String, folder_name: String) -> Result<u64, ErrorDto> {
+    crate::system::CacheJanitor::clean_cache_folder(
+        std::path::Path::new(&project_path),
+        &folder_name,
+    )
+    .map_err(|e| ErrorDto {
+        message: e.to_string(),
+        hint: None,
+    })
+}
+
+#[tauri::command]
+pub fn get_disk_hogs_report(paths: Vec<String>) -> Result<crate::system::DiskHogReport, ErrorDto> {
+    let path_bufs: Vec<std::path::PathBuf> =
+        paths.into_iter().map(std::path::PathBuf::from).collect();
+    Ok(crate::system::CacheJanitor::scan_all_hogs(&path_bufs))
+}
+
 fn find_project_id(db: &AppDb, path: &str) -> crate::error::Result<Option<i64>> {
     let conn = db.conn();
     let mut stmt = conn.prepare("SELECT id FROM projects WHERE path=?1")?;

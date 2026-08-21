@@ -215,3 +215,35 @@ fn test_env_sentinel_gitignore_audit() {
     let audit2 = devdock_lib::security::EnvSentinel::audit_gitignore(p);
     assert!(audit2.unignored_sensitive_files.is_empty());
 }
+
+#[test]
+fn test_cache_janitor_scan_and_clean() {
+    let tmp = tempfile::tempdir().expect("tempdir");
+    let p = tmp.path();
+
+    // Create node_modules and target with dummy files
+    let nm = p.join("node_modules");
+    std::fs::create_dir_all(&nm).unwrap();
+    std::fs::write(nm.join("package.json"), "{\"name\":\"dummy\"}").unwrap();
+
+    let target = p.join("target");
+    std::fs::create_dir_all(&target).unwrap();
+    std::fs::write(target.join("output.bin"), "binary data 123456").unwrap();
+
+    let rep = devdock_lib::system::CacheJanitor::scan_project_cache(p);
+    assert_eq!(rep.cache_folders.len(), 2);
+    assert!(rep.reclaimable_bytes > 0);
+
+    // Clean node_modules
+    let freed = devdock_lib::system::CacheJanitor::clean_cache_folder(p, "node_modules").unwrap();
+    assert!(freed > 0);
+    assert!(!nm.exists());
+
+    // Security check: trying to clean an unsafe folder must fail
+    let err = devdock_lib::system::CacheJanitor::clean_cache_folder(p, "src");
+    assert!(err.is_err());
+
+    let rep2 = devdock_lib::system::CacheJanitor::scan_project_cache(p);
+    assert_eq!(rep2.cache_folders.len(), 1);
+    assert_eq!(rep2.cache_folders[0].name, "target");
+}

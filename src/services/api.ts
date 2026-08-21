@@ -161,6 +161,15 @@ export const api = {
 
   checkRuntimeVersions: (path: string) =>
     invoke<import("../types").RuntimeVersionInfo[]>("check_runtime_versions", { path }),
+
+  getProjectCacheInfo: (path: string) =>
+    invoke<import("../types").ProjectCacheReport>("get_project_cache_info", { path }),
+
+  cleanCacheFolder: (projectPath: string, folderName: string) =>
+    invoke<number>("clean_cache_folder", { projectPath, folderName }),
+
+  getDiskHogsReport: (paths: string[]) =>
+    invoke<import("../types").DiskHogReport>("get_disk_hogs_report", { paths }),
 };
 
 /** Turns a Rust ErrorDto into a readable string for inline UI display. */

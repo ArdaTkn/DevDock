@@ -153,3 +153,38 @@ export interface RuntimeVersionInfo {
   source_file: string;
   is_matched: boolean;
 }
+
+export interface CacheFolderInfo {
+  name: string;
+  path: string;
+  size_bytes: number;
+  human_size: string;
+  category: string;
+  is_safe: boolean;
+}
+
+export interface ProjectCacheReport {
+  total_size_bytes: number;
+  total_human_size: string;
+  reclaimable_bytes: number;
+  reclaimable_human_size: string;
+  cache_folders: CacheFolderInfo[];
+}
+
+export interface DiskHogItem {
+  project_path: string;
+  project_name: string;
+  total_size_bytes: number;
+  reclaimable_bytes: number;
+  reclaimable_human_size: string;
+  last_modified: number;
+  is_stale: boolean;
+  cache_folders: CacheFolderInfo[];
+}
+
+export interface DiskHogReport {
+  total_reclaimable_bytes: number;
+  total_reclaimable_human_size: string;
+  stale_projects_count: number;
+  items: DiskHogItem[];
+}

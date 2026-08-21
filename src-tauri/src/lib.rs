@@ -119,6 +119,9 @@ pub fn run() {
             commands::check_secret_gitignore,
             commands::add_to_gitignore,
             commands::check_runtime_versions,
+            commands::get_project_cache_info,
+            commands::clean_cache_folder,
+            commands::get_disk_hogs_report,
         ])
         .run(tauri::generate_context!())
         .expect("error while running DevDock");

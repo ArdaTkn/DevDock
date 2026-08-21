@@ -8,7 +8,7 @@
 
 *Automatically discover, understand, monitor, and launch every coding project on your computer — 100% locally & privately*
 
-[![Version](https://img.shields.io/badge/version-v0.7.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock)
+[![Version](https://img.shields.io/badge/version-v0.8.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock)
 [![License](https://img.shields.io/badge/license-MIT-6ee7b7.svg?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-9333ea.svg?style=for-the-badge)](https://github.com/ArdaTkn/DevDock)
 [![CI Status](https://img.shields.io/github/actions/workflow/status/ArdaTkn/DevDock/ci.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/ArdaTkn/DevDock/actions)
@@ -39,6 +39,7 @@ Developers accumulate dozens or hundreds of coding projects across `~/Projects`,
 Without DevDock, answering simple questions requires constant terminal navigation:
 - *Where is that old Flutter app or Rust CLI script I wrote last year?*
 - *Which local ports (`localhost:3000`, `5173`, `8000`) are active right now?*
+- *How many gigabytes of dead `node_modules` or `target` build cache are hogging my disk?*
 - *Do I have uncommitted Git changes before pushing?*
 - *Is this project missing `.env` keys from `.env.example` or leaking keys to Git?*
 - *Is this project missing `node_modules` or `.venv` dependencies?*
@@ -48,6 +49,12 @@ Without DevDock, answering simple questions requires constant terminal navigatio
 ---
 
 ## ✨ Core Features
+
+### 🧹 Disk Space Hog Visualizer & Safe Cache Janitor
+- **Interactive Disk Footprint Inspector:** Accurately calculates project footprint and isolates disposable build cache folders (`node_modules`, `target`, `.dart_tool`, `build`, `.venv`, `.next`, `dist`, `Pods`, `DerivedData`).
+- **One-Click Safe Cache Cleanup:** Reclaim gigabytes of disk space with 1-click without affecting source code.
+- **Stale Project Detector:** Identifies abandoned projects untouched for >90 days that are silently wasting disk space with heavy build artifacts.
+- **Global Disk Janitor Dashboard:** Overview of total reclaimable storage across all repositories with batch cleanup capability.
 
 ### 🛡️ Environment Sentinel & Secret Leak Prevention
 - **`.env.example` vs `.env` Diff Checker:** Automatically extracts environment variable keys and warns you when required template keys are missing from your local `.env`. (Values are **never** read or stored for 100% privacy).
@@ -182,8 +189,8 @@ Read our full [Security Policy](SECURITY.md) and [`docs/SECURITY.md`](docs/SECUR
 - [x] **v0.5.0** — Project dependency visualizer, 6 custom dark themes, global terminal CLI (`devdock`, `devdock update`, `devdock ports`).
 - [x] **v0.6.0** — Workspaces & Project Collections, Bulk Git sync ("⬇️ Pull All", "📋 Git Audit"), in-app workspace manager.
 - [x] **v0.7.0** — `.env.example` vs `.env` diff inspector, GitIgnore secret leak prevention, runtime toolchain version warnings.
-- [ ] **v0.8.0** *(Next)* — Disk Space Hog visualizer, 1-click safe build cache cleaner (`node_modules`, `target`, `.dart_tool`), stale project detector.
-- [ ] **v0.9.0** — macOS Menu Bar & Windows Tray popover widget, global `⌥ Space` floating HUD, dev server crash notifications.
+- [x] **v0.8.0** — Disk Space Hog visualizer, 1-click safe build cache cleaner (`node_modules`, `target`, `.dart_tool`), stale project detector.
+- [ ] **v0.9.0** *(Next)* — macOS Menu Bar & Windows Tray popover widget, global `⌥ Space` floating HUD, dev server crash notifications.
 - [ ] **v1.0.0** — Privacy-first offline local AI (Ollama / Apple Neural Engine), semantic codebase search, interactive architecture graph.
 
 Check out [`docs/PLAN.md`](docs/PLAN.md) for full roadmap details.

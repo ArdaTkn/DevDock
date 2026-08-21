@@ -32,6 +32,10 @@ export function ProjectDetail() {
   const [envReport, setEnvReport] = useState<EnvDiffReport | null>(null);
   const [gitignoreReport, setGitignoreReport] = useState<GitIgnoreAuditReport | null>(null);
   const [runtimeVersions, setRuntimeVersions] = useState<RuntimeVersionInfo[]>([]);
+  const [cacheReport, setCacheReport] = useState<import("../types").ProjectCacheReport | null>(null);
+  const [cleanTarget, setCleanTarget] = useState<import("../types").CacheFolderInfo | null>(null);
+  const [cleanAllConfirm, setCleanAllConfirm] = useState(false);
+  const [cleaning, setCleaning] = useState(false);
   const [newCmdName, setNewCmdName] = useState("");
   const [newCmdStr, setNewCmdStr] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -59,12 +63,45 @@ export function ProjectDetail() {
           void api.checkEnvDiff(p.path).then(setEnvReport);
           void api.checkSecretGitIgnore(p.path).then(setGitignoreReport);
           void api.checkRuntimeVersions(p.path).then(setRuntimeVersions);
+          void api.getProjectCacheInfo(p.path).then(setCacheReport);
         }
       } catch (e) {
         setError(String(e));
       }
     })();
   }, [id]);
+
+  const handleCleanFolder = async (folderName: string) => {
+    if (!project) return;
+    setCleaning(true);
+    try {
+      await api.cleanCacheFolder(project.path, folderName);
+      const rep = await api.getProjectCacheInfo(project.path);
+      setCacheReport(rep);
+      setCleanTarget(null);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCleaning(false);
+    }
+  };
+
+  const handleCleanAllFolders = async () => {
+    if (!project || !cacheReport) return;
+    setCleaning(true);
+    try {
+      for (const f of cacheReport.cache_folders) {
+        await api.cleanCacheFolder(project.path, f.name);
+      }
+      const rep = await api.getProjectCacheInfo(project.path);
+      setCacheReport(rep);
+      setCleanAllConfirm(false);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCleaning(false);
+    }
+  };
 
   const handleAddToGitignore = async (entry: string) => {
     if (!project) return;
@@ -435,6 +472,129 @@ export function ProjectDetail() {
           </div>
         )}
       </section>
+
+      {/* Disk Usage & Safe Cache Janitor Panel */}
+      {cacheReport && (
+        <section className="panel">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h2>🧹 Disk Usage & Cache Janitor</h2>
+            {cacheReport.cache_folders.length > 0 && (
+              <button
+                className="btn btn-sm btn-danger-soft"
+                disabled={cleaning}
+                onClick={() => setCleanAllConfirm(true)}
+              >
+                {cleaning ? "Cleaning…" : `🧹 Clean All Cache (${cacheReport.reclaimable_human_size})`}
+              </button>
+            )}
+          </div>
+          <p className="muted" style={{ marginBottom: "14px" }}>
+            Analyze build cache, package dependencies, and reclaim disk space safely without breaking code.
+          </p>
+
+          <div className="cache-overview-cards">
+            <div className="cache-metric-card">
+              <span className="cache-metric-label">Total Project Footprint</span>
+              <span className="cache-metric-value">{cacheReport.total_human_size}</span>
+            </div>
+            <div className="cache-metric-card highlight">
+              <span className="cache-metric-label">Reclaimable Cache</span>
+              <span className="cache-metric-value">{cacheReport.reclaimable_human_size}</span>
+            </div>
+            <div className="cache-metric-card">
+              <span className="cache-metric-label">Detected Cache Folders</span>
+              <span className="cache-metric-value">{cacheReport.cache_folders.length}</span>
+            </div>
+          </div>
+
+          {cacheReport.cache_folders.length > 0 ? (
+            <div className="cache-folders-list" style={{ marginTop: "14px" }}>
+              {cacheReport.cache_folders.map((f) => (
+                <div key={f.name} className="cache-folder-row">
+                  <div className="cache-folder-info">
+                    <span className="cache-folder-name">📁 {f.name}</span>
+                    <span className="cache-folder-desc">{f.category}</span>
+                  </div>
+                  <div className="cache-folder-actions">
+                    <span className="cache-folder-size">{f.human_size}</span>
+                    <button
+                      className="btn btn-sm danger"
+                      disabled={cleaning}
+                      onClick={() => setCleanTarget(f)}
+                    >
+                      Clean
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="muted small" style={{ marginTop: "10px" }}>
+              ✨ Clean! No heavy build cache or dependency directories detected.
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Confirmation Modal for Single Cache Clean */}
+      {cleanTarget && (
+        <div className="modal-overlay" onClick={() => setCleanTarget(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>🧹 Clean Cache: {cleanTarget.name}</h3>
+            <p style={{ margin: "14px 0", fontSize: "13.5px" }}>
+              Are you sure you want to delete <b>`{cleanTarget.name}`</b> ({cleanTarget.human_size})?
+              <br />
+              <span className="muted" style={{ fontSize: "12px", display: "inline-block", marginTop: "8px" }}>
+                This is a build artifact / cache folder ({cleanTarget.category}). It can be regenerated anytime by running your project's install or build command.
+              </span>
+            </p>
+            <div className="modal-buttons">
+              <button type="button" className="btn" disabled={cleaning} onClick={() => setCleanTarget(null)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn danger"
+                disabled={cleaning}
+                onClick={() => void handleCleanFolder(cleanTarget.name)}
+              >
+                {cleaning ? "Cleaning…" : `Delete ${cleanTarget.name}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal for Clean All Cache */}
+      {cleanAllConfirm && cacheReport && (
+        <div className="modal-overlay" onClick={() => setCleanAllConfirm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>🧹 Reclaim All Cache ({cacheReport.reclaimable_human_size})</h3>
+            <p style={{ margin: "14px 0", fontSize: "13.5px" }}>
+              This will remove all {cacheReport.cache_folders.length} cache folders in this project:
+              <br />
+              <b>{cacheReport.cache_folders.map((f) => f.name).join(", ")}</b>
+              <br />
+              <span className="muted" style={{ fontSize: "12px", display: "inline-block", marginTop: "8px" }}>
+                You will reclaim <b>{cacheReport.reclaimable_human_size}</b> of disk space. Source code is never affected.
+              </span>
+            </p>
+            <div className="modal-buttons">
+              <button type="button" className="btn" disabled={cleaning} onClick={() => setCleanAllConfirm(false)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn danger"
+                disabled={cleaning}
+                onClick={() => void handleCleanAllFolders()}
+              >
+                {cleaning ? "Cleaning All…" : "Clean All Cache Folders"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {scripts.length > 0 && (
         <section className="panel">
