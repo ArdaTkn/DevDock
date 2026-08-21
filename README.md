@@ -11,7 +11,7 @@
 [![Version](https://img.shields.io/badge/version-v0.5.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock/releases)
 [![License](https://img.shields.io/badge/license-MIT-6ee7b7.svg?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-9333ea.svg?style=for-the-badge)](https://github.com/ArdaTkn/DevDock/releases)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/ArdaTkn/DevDock/release.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/ArdaTkn/DevDock/actions)
+
 
 <p align="center">
   <a href="#-the-problem">The Problem</a> •
