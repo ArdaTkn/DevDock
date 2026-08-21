@@ -172,8 +172,8 @@ Read our full [Security Policy](SECURITY.md) and [`docs/SECURITY.md`](docs/SECUR
 - [x] **v0.3.0** — Smart Listening Port scanner (`localhost:3000`, `5173`), Docker container inspector, deterministic project health audit.
 - [x] **v0.4.0** — GitHub integration, custom project tags, auto-saved Markdown notes, configurable custom shell commands.
 - [x] **v0.5.0** — Project dependency visualizer, 6 custom dark themes, global terminal CLI (`devdock`, `devdock update`, `devdock ports`).
-- [ ] **v0.6.0** *(Next)* — Workspaces & Project Collections, Bulk Git sync ("Pull All", "Stash All"), multi-service launcher.
-- [ ] **v0.7.0** — `.env.example` vs `.env` diff inspector, GitIgnore secret leak prevention, runtime toolchain version warnings.
+- [x] **v0.6.0** — Workspaces & Project Collections, Bulk Git sync ("⬇️ Pull All", "📋 Git Audit"), workspace project manager.
+- [ ] **v0.7.0** *(Next)* — `.env.example` vs `.env` diff inspector, GitIgnore secret leak prevention, runtime toolchain version warnings.
 - [ ] **v0.8.0** — Disk Space Hog visualizer, 1-click safe build cache cleaner (`node_modules`, `target`), stale project detector.
 - [ ] **v0.9.0** — macOS Menu Bar & Windows Tray popover widget, global `⌥ Space` floating HUD, dev server crash notifications.
 - [ ] **v1.0.0** — Privacy-first offline local AI (Ollama / Apple Neural Engine), semantic codebase search, interactive architecture graph.

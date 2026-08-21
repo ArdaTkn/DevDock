@@ -122,6 +122,33 @@ export const api = {
     invoke<import("../types").DependencyInfo[]>("get_project_dependencies", {
       path,
     }),
+
+  listWorkspaces: () =>
+    invoke<import("../types").WorkspaceDto[]>("list_workspaces"),
+
+  createWorkspace: (name: string, color: string) =>
+    invoke<import("../types").WorkspaceDto>("create_workspace", {
+      name,
+      color,
+    }),
+
+  deleteWorkspace: (id: number) =>
+    invoke<void>("delete_workspace", { id }),
+
+  getProjectWorkspaces: (projectId: number) =>
+    invoke<number[]>("get_project_workspaces", { projectId }),
+
+  listWorkspaceProjectIds: (workspaceId: number) =>
+    invoke<number[]>("list_workspace_project_ids", { workspaceId }),
+
+  setProjectWorkspaces: (projectId: number, workspaceIds: number[]) =>
+    invoke<void>("set_project_workspaces", { projectId, workspaceIds }),
+
+  bulkGitPull: (paths: string[]) =>
+    invoke<import("../types").BulkGitResult[]>("bulk_git_pull", { paths }),
+
+  bulkGitStatus: (paths: string[]) =>
+    invoke<import("../types").BulkGitStatusResult[]>("bulk_git_status", { paths }),
 };
 
 /** Turns a Rust ErrorDto into a readable string for inline UI display. */

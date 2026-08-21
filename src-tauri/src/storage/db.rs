@@ -114,6 +114,19 @@ fn migrate(conn: &Connection) -> Result<()> {
             command TEXT NOT NULL
         );
 
+        CREATE TABLE IF NOT EXISTS workspaces (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            color TEXT NOT NULL,
+            created_at INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS project_workspaces (
+            project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+            workspace_id INTEGER REFERENCES workspaces(id) ON DELETE CASCADE,
+            PRIMARY KEY (project_id, workspace_id)
+        );
+
         CREATE INDEX IF NOT EXISTS idx_projects_path ON projects(path);
         CREATE INDEX IF NOT EXISTS idx_projects_location ON projects(scan_location_id);
         "#,
@@ -122,16 +135,14 @@ fn migrate(conn: &Connection) -> Result<()> {
 }
 
 impl AppDb {
-    /// Locks and returns the underlying connection. Keep the guard alive for the
-    /// duration of a single statement batch; never hold two guards at once.
     pub fn conn(&self) -> MutexGuard<'_, Connection> {
-        self.conn.lock().unwrap_or_else(|e| e.into_inner())
+        self.conn.lock().unwrap()
     }
 
     pub fn set_setting(&self, key: &str, value: &str) -> Result<()> {
         let conn = self.conn();
         conn.execute(
-            "INSERT INTO settings(key,value) VALUES(?1,?2)
+            "INSERT INTO settings(key, value) VALUES(?1, ?2)
              ON CONFLICT(key) DO UPDATE SET value=excluded.value",
             rusqlite::params![key, value],
         )?;
@@ -142,21 +153,21 @@ impl AppDb {
         let conn = self.conn();
         let mut stmt = conn.prepare("SELECT value FROM settings WHERE key=?1")?;
         let mut rows = stmt.query(rusqlite::params![key])?;
-        match rows.next()? {
-            Some(row) => Ok(Some(row.get(0)?)),
-            None => Ok(None),
+        if let Some(row) = rows.next()? {
+            Ok(Some(row.get(0)?))
+        } else {
+            Ok(None)
         }
     }
 
     // --- Tags ---
     pub fn get_tags(&self, project_id: i64) -> Result<Vec<String>> {
         let conn = self.conn();
-        let mut stmt =
-            conn.prepare("SELECT tag FROM project_tags WHERE project_id=?1 ORDER BY tag")?;
+        let mut stmt = conn.prepare("SELECT tag FROM project_tags WHERE project_id=?1 ORDER BY tag")?;
         let rows = stmt.query_map(rusqlite::params![project_id], |r| r.get(0))?;
         let mut tags = Vec::new();
-        for t in rows {
-            tags.push(t?);
+        for r in rows {
+            tags.push(r?);
         }
         Ok(tags)
     }
@@ -184,9 +195,10 @@ impl AppDb {
         let conn = self.conn();
         let mut stmt = conn.prepare("SELECT content FROM project_notes WHERE project_id=?1")?;
         let mut rows = stmt.query(rusqlite::params![project_id])?;
-        match rows.next()? {
-            Some(r) => Ok(Some(r.get(0)?)),
-            None => Ok(None),
+        if let Some(row) = rows.next()? {
+            Ok(Some(row.get(0)?))
+        } else {
+            Ok(None)
         }
     }
 
@@ -194,9 +206,8 @@ impl AppDb {
         let conn = self.conn();
         let now = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .unwrap_or_default()
-            .as_secs() as i64;
-
+            .map(|d| d.as_secs() as i64)
+            .unwrap_or(0);
         conn.execute(
             "INSERT INTO project_notes(project_id, content, updated_at) VALUES(?1, ?2, ?3)
              ON CONFLICT(project_id) DO UPDATE SET content=excluded.content, updated_at=excluded.updated_at",
@@ -236,6 +247,71 @@ impl AppDb {
             "DELETE FROM project_custom_commands WHERE id=?1",
             rusqlite::params![id],
         )?;
+        Ok(())
+    }
+
+    // --- Workspaces ---
+    pub fn list_workspaces(&self) -> Result<Vec<(i64, String, String)>> {
+        let conn = self.conn();
+        let mut stmt = conn.prepare("SELECT id, name, color FROM workspaces ORDER BY name")?;
+        let rows = stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?;
+        let mut list = Vec::new();
+        for r in rows {
+            list.push(r?);
+        }
+        Ok(list)
+    }
+
+    pub fn create_workspace(&self, name: &str, color: &str) -> Result<i64> {
+        let conn = self.conn();
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_secs() as i64)
+            .unwrap_or(0);
+        conn.execute(
+            "INSERT INTO workspaces(name, color, created_at) VALUES(?1, ?2, ?3)",
+            rusqlite::params![name, color, now],
+        )?;
+        Ok(conn.last_insert_rowid())
+    }
+
+    pub fn delete_workspace(&self, id: i64) -> Result<()> {
+        let conn = self.conn();
+        conn.execute("DELETE FROM workspaces WHERE id=?1", rusqlite::params![id])?;
+        Ok(())
+    }
+
+    pub fn get_project_workspaces(&self, project_id: i64) -> Result<Vec<i64>> {
+        let conn = self.conn();
+        let mut stmt = conn.prepare("SELECT workspace_id FROM project_workspaces WHERE project_id=?1")?;
+        let rows = stmt.query_map(rusqlite::params![project_id], |r| r.get(0))?;
+        let mut list = Vec::new();
+        for r in rows {
+            list.push(r?);
+        }
+        Ok(list)
+    }
+
+    pub fn list_workspace_project_ids(&self, workspace_id: i64) -> Result<Vec<i64>> {
+        let conn = self.conn();
+        let mut stmt = conn.prepare("SELECT project_id FROM project_workspaces WHERE workspace_id=?1")?;
+        let rows = stmt.query_map(rusqlite::params![workspace_id], |r| r.get(0))?;
+        let mut list = Vec::new();
+        for r in rows {
+            list.push(r?);
+        }
+        Ok(list)
+    }
+
+    pub fn set_project_workspaces(&self, project_id: i64, workspace_ids: &[i64]) -> Result<()> {
+        let conn = self.conn();
+        conn.execute("DELETE FROM project_workspaces WHERE project_id=?1", rusqlite::params![project_id])?;
+        for wid in workspace_ids {
+            conn.execute(
+                "INSERT INTO project_workspaces(project_id, workspace_id) VALUES(?1, ?2)",
+                rusqlite::params![project_id, wid],
+            )?;
+        }
         Ok(())
     }
 }

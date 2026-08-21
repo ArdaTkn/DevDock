@@ -106,6 +106,14 @@ pub fn run() {
             commands::add_custom_command,
             commands::remove_custom_command,
             commands::get_project_dependencies,
+            commands::list_workspaces,
+            commands::create_workspace,
+            commands::delete_workspace,
+            commands::get_project_workspaces,
+            commands::list_workspace_project_ids,
+            commands::set_project_workspaces,
+            commands::bulk_git_pull,
+            commands::bulk_git_status,
         ])
         .run(tauri::generate_context!())
         .expect("error while running DevDock");

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { listen } from "@tauri-apps/api/event";
-import type { Project, ScanLocation } from "../types";
+import type { Project, ScanLocation, WorkspaceDto } from "../types";
 import { api } from "../services/api";
 
 export type SortKey =
@@ -13,6 +13,9 @@ interface ProjectsState {
   projects: Project[];
   recentProjects: Project[];
   locations: ScanLocation[];
+  workspaces: WorkspaceDto[];
+  activeWorkspaceId: number | null;
+  workspaceProjectIds: number[];
   loading: boolean;
   search: string;
   techFilter: string | null;
@@ -21,6 +24,10 @@ interface ProjectsState {
   load: () => Promise<void>;
   refresh: () => Promise<void>;
   loadRecent: () => Promise<void>;
+  loadWorkspaces: () => Promise<void>;
+  createWorkspace: (name: string, color: string) => Promise<void>;
+  deleteWorkspace: (id: number) => Promise<void>;
+  setActiveWorkspaceId: (id: number | null) => Promise<void>;
   listenWatcher: () => Promise<void>;
   setSearch: (s: string) => void;
   setTechFilter: (t: string | null) => void;
@@ -43,11 +50,58 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   projects: [],
   recentProjects: [],
   locations: [],
+  workspaces: [],
+  activeWorkspaceId: null,
+  workspaceProjectIds: [],
   loading: false,
   search: "",
   techFilter: null,
   sort: "recent",
   error: null,
+
+  loadWorkspaces: async () => {
+    try {
+      const ws = await api.listWorkspaces();
+      set({ workspaces: ws });
+    } catch {
+      // ignore
+    }
+  },
+
+  createWorkspace: async (name: string, color: string) => {
+    try {
+      const w = await api.createWorkspace(name, color);
+      set({ workspaces: [...get().workspaces, w] });
+    } catch (e) {
+      set({ error: String(e) });
+    }
+  },
+
+  deleteWorkspace: async (id: number) => {
+    try {
+      await api.deleteWorkspace(id);
+      set({
+        workspaces: get().workspaces.filter((w) => w.id !== id),
+        activeWorkspaceId: get().activeWorkspaceId === id ? null : get().activeWorkspaceId,
+        workspaceProjectIds: get().activeWorkspaceId === id ? [] : get().workspaceProjectIds,
+      });
+    } catch (e) {
+      set({ error: String(e) });
+    }
+  },
+
+  setActiveWorkspaceId: async (id: number | null) => {
+    if (id === null) {
+      set({ activeWorkspaceId: null, workspaceProjectIds: [] });
+    } else {
+      try {
+        const pids = await api.listWorkspaceProjectIds(id);
+        set({ activeWorkspaceId: id, workspaceProjectIds: pids });
+      } catch {
+        set({ activeWorkspaceId: id, workspaceProjectIds: [] });
+      }
+    }
+  },
 
   listenWatcher: async () => {
     if (watcherUnsub) return;

@@ -7,6 +7,7 @@ import type {
   GitHubRepoInfo,
   CustomCommandDto,
   DependencyInfo,
+  WorkspaceDto,
 } from "../types";
 import { api } from "../services/api";
 import { displayPath, gitState, humanSize, timeAgo } from "../lib/format";
@@ -23,6 +24,8 @@ export function ProjectDetail() {
   const [newTag, setNewTag] = useState("");
   const [notes, setNotes] = useState("");
   const [customCmds, setCustomCmds] = useState<CustomCommandDto[]>([]);
+  const [allWorkspaces, setAllWorkspaces] = useState<WorkspaceDto[]>([]);
+  const [projectWsIds, setProjectWsIds] = useState<number[]>([]);
   const [newCmdName, setNewCmdName] = useState("");
   const [newCmdStr, setNewCmdStr] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -45,12 +48,28 @@ export function ProjectDetail() {
           void api.getProjectTags(pid).then(setTags);
           void api.getProjectNotes(pid).then((n) => setNotes(n ?? ""));
           void api.listCustomCommands(pid).then(setCustomCmds);
+          void api.listWorkspaces().then(setAllWorkspaces);
+          void api.getProjectWorkspaces(pid).then(setProjectWsIds);
         }
       } catch (e) {
         setError(String(e));
       }
     })();
   }, [id]);
+
+  const handleToggleWorkspace = async (wsId: number) => {
+    if (!id) return;
+    const pid = Number(id);
+    const updated = projectWsIds.includes(wsId)
+      ? projectWsIds.filter((w) => w !== wsId)
+      : [...projectWsIds, wsId];
+    setProjectWsIds(updated);
+    try {
+      await api.setProjectWorkspaces(pid, updated);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleAddTag = async () => {
     if (!project || !newTag.trim()) return;
@@ -134,6 +153,34 @@ export function ProjectDetail() {
           </>
         )}
       </div>
+
+      <section className="panel">
+        <h2>📁 Assigned Workspaces</h2>
+        {allWorkspaces.length === 0 ? (
+          <p className="muted">No workspaces created yet. Create one from the Dashboard tab bar!</p>
+        ) : (
+          <div className="tags-row">
+            {allWorkspaces.map((w) => {
+              const isAssigned = projectWsIds.includes(w.id);
+              return (
+                <button
+                  key={w.id}
+                  type="button"
+                  className={`ws-chip ${isAssigned ? "assigned" : ""}`}
+                  style={{
+                    borderColor: isAssigned ? w.color : "transparent",
+                    backgroundColor: isAssigned ? `${w.color}22` : undefined,
+                  }}
+                  onClick={() => void handleToggleWorkspace(w.id)}
+                >
+                  <span className="ws-dot" style={{ backgroundColor: w.color }} />
+                  {w.name} {isAssigned ? "✓" : "+"}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
       <section className="panel">
         <h2>Tags & Categories</h2>

@@ -360,6 +360,134 @@ pub fn get_project_dependencies(
     Ok(crate::discovery::deps::DependencyParser::parse_dependencies(&path))
 }
 
+#[derive(Debug, Clone, Serialize)]
+pub struct WorkspaceDto {
+    pub id: i64,
+    pub name: String,
+    pub color: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct BulkGitResult {
+    pub path: String,
+    pub success: bool,
+    pub message: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct BulkGitStatusResult {
+    pub path: String,
+    pub is_dirty: bool,
+    pub branch: String,
+    pub uncommitted_count: usize,
+}
+
+#[tauri::command]
+pub fn list_workspaces(app: AppHandle) -> Result<Vec<WorkspaceDto>, ErrorDto> {
+    let rows = state(&app).db.list_workspaces()?;
+    Ok(rows
+        .into_iter()
+        .map(|(id, name, color)| WorkspaceDto { id, name, color })
+        .collect())
+}
+
+#[tauri::command]
+pub fn create_workspace(
+    app: AppHandle,
+    name: String,
+    color: String,
+) -> Result<WorkspaceDto, ErrorDto> {
+    let id = state(&app).db.create_workspace(&name, &color)?;
+    Ok(WorkspaceDto { id, name, color })
+}
+
+#[tauri::command]
+pub fn delete_workspace(app: AppHandle, id: i64) -> Result<(), ErrorDto> {
+    state(&app).db.delete_workspace(id)?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn get_project_workspaces(app: AppHandle, project_id: i64) -> Result<Vec<i64>, ErrorDto> {
+    Ok(state(&app).db.get_project_workspaces(project_id)?)
+}
+
+#[tauri::command]
+pub fn list_workspace_project_ids(
+    app: AppHandle,
+    workspace_id: i64,
+) -> Result<Vec<i64>, ErrorDto> {
+    Ok(state(&app).db.list_workspace_project_ids(workspace_id)?)
+}
+
+#[tauri::command]
+pub fn set_project_workspaces(
+    app: AppHandle,
+    project_id: i64,
+    workspace_ids: Vec<i64>,
+) -> Result<(), ErrorDto> {
+    state(&app)
+        .db
+        .set_project_workspaces(project_id, &workspace_ids)?;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn bulk_git_pull(paths: Vec<String>) -> Result<Vec<BulkGitResult>, ErrorDto> {
+    let mut results = Vec::new();
+    for p in paths {
+        let output = std::process::Command::new("git")
+            .arg("-C")
+            .arg(&p)
+            .arg("pull")
+            .output();
+
+        match output {
+            Ok(out) => {
+                let msg = String::from_utf8_lossy(if out.status.success() {
+                    &out.stdout
+                } else {
+                    &out.stderr
+                })
+                .trim()
+                .to_string();
+                results.push(BulkGitResult {
+                    path: p,
+                    success: out.status.success(),
+                    message: msg,
+                });
+            }
+            Err(e) => {
+                results.push(BulkGitResult {
+                    path: p,
+                    success: false,
+                    message: e.to_string(),
+                });
+            }
+        }
+    }
+    Ok(results)
+}
+
+#[tauri::command]
+pub fn bulk_git_status(paths: Vec<String>) -> Result<Vec<BulkGitStatusResult>, ErrorDto> {
+    let mut results = Vec::new();
+    for p in paths {
+        if let Ok(Some(git)) = crate::git::GitCommand::inspect(std::path::Path::new(&p)) {
+            let uncommitted = (git.modified_count + git.staged_count + git.untracked_count) as usize;
+            let is_dirty = uncommitted > 0;
+            let branch = git.branch.unwrap_or_else(|| "detached".to_string());
+            results.push(BulkGitStatusResult {
+                path: p,
+                is_dirty,
+                branch,
+                uncommitted_count: uncommitted,
+            });
+        }
+    }
+    Ok(results)
+}
+
 fn find_project_id(db: &AppDb, path: &str) -> crate::error::Result<Option<i64>> {
     let conn = db.conn();
     let mut stmt = conn.prepare("SELECT id FROM projects WHERE path=?1")?;

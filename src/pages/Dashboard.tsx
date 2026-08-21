@@ -1,15 +1,19 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ProjectCard } from "../components/ProjectCard";
 import { useProjectsStore, SortKey } from "../stores/projectsStore";
 import { useScanStore } from "../stores/scanStore";
 import { useSystemStore } from "../stores/systemStore";
 import { allTechs } from "../lib/format";
 import { api } from "../services/api";
+import type { BulkGitResult, BulkGitStatusResult } from "../types";
 
 export function Dashboard() {
   const {
     projects,
     recentProjects,
+    workspaces,
+    activeWorkspaceId,
+    workspaceProjectIds,
     loading,
     error,
     search,
@@ -20,9 +24,20 @@ export function Dashboard() {
     setSort,
     refresh,
     load,
+    loadWorkspaces,
+    createWorkspace,
+    deleteWorkspace,
+    setActiveWorkspaceId,
   } = useProjectsStore();
   const scanStore = useScanStore();
   const { ports, loadPorts } = useSystemStore();
+
+  const [showWsModal, setShowWsModal] = useState(false);
+  const [wsName, setWsName] = useState("");
+  const [wsColor, setWsColor] = useState("#10b981");
+  const [bulkPulling, setBulkPulling] = useState(false);
+  const [bulkPullResults, setBulkPullResults] = useState<BulkGitResult[] | null>(null);
+  const [bulkStatusList, setBulkStatusList] = useState<BulkGitStatusResult[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -30,6 +45,7 @@ export function Dashboard() {
       useScanStore.getState().listen();
       void useProjectsStore.getState().listenWatcher();
       void loadPorts();
+      void loadWorkspaces();
       await load();
       if (cancelled) return;
       await useScanStore.getState().ensureScan();
@@ -51,6 +67,9 @@ export function Dashboard() {
 
   const filtered = useMemo(() => {
     let list = projects;
+    if (activeWorkspaceId !== null) {
+      list = list.filter((p) => workspaceProjectIds.includes(p.id));
+    }
     if (techFilter) list = list.filter((p) => p.techs.some((t) => t.name === techFilter));
     const q = search.trim().toLowerCase();
     if (q) {
@@ -80,7 +99,7 @@ export function Dashboard() {
         list = [...list].sort((a, b) => b.last_modified - a.last_modified);
     }
     return list;
-  }, [projects, search, techFilter, sort]);
+  }, [projects, activeWorkspaceId, workspaceProjectIds, search, techFilter, sort]);
 
   const sorting: Record<SortKey, string> = {
     recent: "Recently modified",
@@ -90,6 +109,43 @@ export function Dashboard() {
   };
 
   const running = scanStore.running;
+
+  const handleCreateWorkspace = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!wsName.trim()) return;
+    await createWorkspace(wsName.trim(), wsColor);
+    setWsName("");
+    setShowWsModal(false);
+  };
+
+  const handleBulkPull = async () => {
+    const paths = filtered.filter((p) => p.git?.is_git).map((p) => p.path);
+    if (paths.length === 0) return;
+    setBulkPulling(true);
+    setBulkPullResults(null);
+    try {
+      const res = await api.bulkGitPull(paths);
+      setBulkPullResults(res);
+      await refresh();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setBulkPulling(false);
+    }
+  };
+
+  const handleBulkStatusAudit = async () => {
+    const paths = filtered.filter((p) => p.git?.is_git).map((p) => p.path);
+    if (paths.length === 0) return;
+    try {
+      const res = await api.bulkGitStatus(paths);
+      setBulkStatusList(res);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const activeWorkspace = workspaces.find((w) => w.id === activeWorkspaceId);
 
   return (
     <div className="page">
@@ -115,7 +171,7 @@ export function Dashboard() {
           </select>
         </div>
         <div className="toolbar-right">
-          <span className="count">{projects.length} projects</span>
+          <span className="count">{filtered.length} projects</span>
           <button
             className="btn primary"
             disabled={running}
@@ -128,6 +184,158 @@ export function Dashboard() {
           </button>
         </div>
       </header>
+
+      {/* Workspaces Tab Bar */}
+      <div className="workspaces-bar">
+        <div className="workspaces-tabs">
+          <button
+            className={`ws-tab ${activeWorkspaceId === null ? "active" : ""}`}
+            onClick={() => void setActiveWorkspaceId(null)}
+          >
+            🌐 All Projects ({projects.length})
+          </button>
+          {workspaces.map((w) => (
+            <div key={w.id} className="ws-tab-wrapper">
+              <button
+                className={`ws-tab ${activeWorkspaceId === w.id ? "active" : ""}`}
+                onClick={() => void setActiveWorkspaceId(w.id)}
+              >
+                <span className="ws-dot" style={{ backgroundColor: w.color }} />
+                {w.name}
+              </button>
+              {activeWorkspaceId === w.id && (
+                <button
+                  className="ws-delete-btn"
+                  title="Delete this workspace"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm(`Delete workspace "${w.name}"? (Projects will not be deleted)`)) {
+                      void deleteWorkspace(w.id);
+                    }
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+          <button className="ws-tab-add" onClick={() => setShowWsModal(true)}>
+            + Add Workspace
+          </button>
+        </div>
+
+        {/* Bulk Git Actions Bar */}
+        <div className="ws-actions">
+          <button
+            className="btn ws-action-btn"
+            disabled={bulkPulling || filtered.length === 0}
+            onClick={() => void handleBulkPull()}
+            title="Git pull all projects in current view"
+          >
+            {bulkPulling ? "Pulling…" : "⬇️ Pull All"}
+          </button>
+          <button
+            className="btn ws-action-btn"
+            disabled={filtered.length === 0}
+            onClick={() => void handleBulkStatusAudit()}
+            title="Audit uncommitted changes across all workspace projects"
+          >
+            📋 Git Audit
+          </button>
+        </div>
+      </div>
+
+      {/* New Workspace Modal */}
+      {showWsModal && (
+        <div className="modal-overlay" onClick={() => setShowWsModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>📁 Create New Workspace</h3>
+            <form onSubmit={(e) => void handleCreateWorkspace(e)}>
+              <div className="form-group">
+                <label>Workspace Name:</label>
+                <input
+                  className="input"
+                  placeholder="e.g. Client Work, Open Source, Microservices"
+                  value={wsName}
+                  onChange={(e) => setWsName(e.target.value)}
+                  autoFocus
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Badge Color:</label>
+                <div className="color-picker-row">
+                  {["#10b981", "#06b6d4", "#8b5cf6", "#ec4899", "#f59e0b", "#3b82f6", "#ef4444"].map((c) => (
+                    <button
+                      type="button"
+                      key={c}
+                      className={`color-chip ${wsColor === c ? "selected" : ""}`}
+                      style={{ backgroundColor: c }}
+                      onClick={() => setWsColor(c)}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="modal-buttons">
+                <button type="button" className="btn" onClick={() => setShowWsModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn primary">
+                  Create Workspace
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Pull Results Modal */}
+      {bulkPullResults && (
+        <div className="modal-overlay" onClick={() => setBulkPullResults(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>⬇️ Bulk Git Pull Results ({bulkPullResults.length} repos)</h3>
+            <div className="bulk-results-list">
+              {bulkPullResults.map((r, i) => (
+                <div key={i} className={`bulk-item ${r.success ? "success" : "failed"}`}>
+                  <span className="bulk-path">{r.path.split("/").pop()}</span>
+                  <span className="bulk-msg">{r.message || (r.success ? "Updated" : "Failed")}</span>
+                </div>
+              ))}
+            </div>
+            <div className="modal-buttons">
+              <button className="btn primary" onClick={() => setBulkPullResults(null)}>
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Git Audit Modal */}
+      {bulkStatusList && (
+        <div className="modal-overlay" onClick={() => setBulkStatusList(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>📋 Workspace Git Audit ({bulkStatusList.length} Repos)</h3>
+            <div className="bulk-results-list">
+              {bulkStatusList.map((s, i) => (
+                <div key={i} className={`bulk-item ${s.is_dirty ? "dirty" : "clean"}`}>
+                  <span className="bulk-path">
+                    {s.path.split("/").pop()} <span className="bulk-branch">({s.branch})</span>
+                  </span>
+                  <span className={`bulk-badge ${s.is_dirty ? "badge-dirty" : "badge-clean"}`}>
+                    {s.is_dirty ? `⚠️ ${s.uncommitted_count} uncommitted files` : "✅ Clean"}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="modal-buttons">
+              <button className="btn primary" onClick={() => setBulkStatusList(null)}>
+                Close Audit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {error && <div className="banner error">{error}</div>}
 
@@ -180,12 +388,16 @@ export function Dashboard() {
         </div>
       )}
 
-      {!running && !loading && projects.length === 0 && !error && (
+      {!running && !loading && filtered.length === 0 && !error && (
         <div className="empty">
-          No projects found.
+          {activeWorkspace
+            ? `No projects assigned to workspace "${activeWorkspace.name}" yet.`
+            : "No projects found."}
           <br />
           <span className="muted">
-            Press Rescan, or add a directory in Settings if your projects live outside your home folder.
+            {activeWorkspace
+              ? "Open any project detail page to assign it to this workspace!"
+              : "Press Rescan, or add a directory in Settings if your projects live outside your home folder."}
           </span>
         </div>
       )}
@@ -196,7 +408,7 @@ export function Dashboard() {
             className={`chip-btn ${techFilter === null ? "active" : ""}`}
             onClick={() => setTechFilter(null)}
           >
-            All
+            All Techs
           </button>
           {techs.map((t) => (
             <button
@@ -241,7 +453,7 @@ export function Dashboard() {
         </section>
       )}
 
-      {recentProjects.length > 0 && !search && techFilter === null && (
+      {recentProjects.length > 0 && !search && techFilter === null && activeWorkspaceId === null && (
         <section className="recents-section">
           <div className="recents-header">
             <span className="recents-title">Recently Opened</span>

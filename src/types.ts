@@ -109,3 +109,22 @@ export interface DependencyInfo {
   version: string;
   is_dev: boolean;
 }
+
+export interface WorkspaceDto {
+  id: number;
+  name: string;
+  color: string;
+}
+
+export interface BulkGitResult {
+  path: string;
+  success: boolean;
+  message: string;
+}
+
+export interface BulkGitStatusResult {
+  path: string;
+  is_dirty: boolean;
+  branch: string;
+  uncommitted_count: number;
+}
