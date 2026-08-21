@@ -35,6 +35,7 @@ export function Dashboard() {
   const [showWsModal, setShowWsModal] = useState(false);
   const [wsName, setWsName] = useState("");
   const [wsColor, setWsColor] = useState("#10b981");
+  const [deleteConfirmWs, setDeleteConfirmWs] = useState<import("../types").WorkspaceDto | null>(null);
   const [bulkPulling, setBulkPulling] = useState(false);
   const [bulkAuditing, setBulkAuditing] = useState(false);
   const [bulkPullResults, setBulkPullResults] = useState<BulkGitResult[] | null>(null);
@@ -200,27 +201,14 @@ export function Dashboard() {
             🌐 All Projects ({projects.length})
           </button>
           {workspaces.map((w) => (
-            <div key={w.id} className="ws-tab-wrapper">
-              <button
-                className={`ws-tab ${activeWorkspaceId === w.id ? "active" : ""}`}
-                onClick={() => void setActiveWorkspaceId(w.id)}
-              >
-                <span className="ws-dot" style={{ backgroundColor: w.color }} />
-                {w.name}
-              </button>
-              <button
-                className="ws-delete-btn"
-                title={`Delete workspace "${w.name}"`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (confirm(`Are you sure you want to delete workspace "${w.name}"? (Your project files will not be deleted)`)) {
-                    void deleteWorkspace(w.id);
-                  }
-                }}
-              >
-                ×
-              </button>
-            </div>
+            <button
+              key={w.id}
+              className={`ws-tab ${activeWorkspaceId === w.id ? "active" : ""}`}
+              onClick={() => void setActiveWorkspaceId(w.id)}
+            >
+              <span className="ws-dot" style={{ backgroundColor: w.color }} />
+              {w.name}
+            </button>
           ))}
           <button className="ws-tab-add" onClick={() => setShowWsModal(true)}>
             + Add Workspace
@@ -232,11 +220,7 @@ export function Dashboard() {
           {activeWorkspace && (
             <button
               className="btn btn-danger-soft ws-action-btn"
-              onClick={() => {
-                if (confirm(`Delete workspace "${activeWorkspace.name}"? (Projects will not be deleted)`)) {
-                  void deleteWorkspace(activeWorkspace.id);
-                }
-              }}
+              onClick={() => setDeleteConfirmWs(activeWorkspace)}
               title={`Delete workspace "${activeWorkspace.name}"`}
             >
               🗑️ Delete Workspace
@@ -334,6 +318,38 @@ export function Dashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Workspace Confirmation Modal */}
+      {deleteConfirmWs && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirmWs(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>🗑️ Delete Workspace</h3>
+            <p style={{ margin: "14px 0", fontSize: "13.5px" }}>
+              Are you sure you want to delete the workspace <b>"{deleteConfirmWs.name}"</b>?
+              <br />
+              <span className="muted" style={{ fontSize: "12px", display: "inline-block", marginTop: "8px" }}>
+                Your project files and folders on disk will <b>not</b> be deleted.
+              </span>
+            </p>
+            <div className="modal-buttons">
+              <button type="button" className="btn" onClick={() => setDeleteConfirmWs(null)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn danger"
+                onClick={async () => {
+                  const id = deleteConfirmWs.id;
+                  setDeleteConfirmWs(null);
+                  await deleteWorkspace(id);
+                }}
+              >
+                Delete Workspace
+              </button>
+            </div>
           </div>
         </div>
       )}

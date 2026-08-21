@@ -29,6 +29,7 @@ export function Settings() {
   const { theme, setTheme } = useThemeStore();
   const [dir, setDir] = useState("");
   const [adding, setAdding] = useState(false);
+  const [deleteConfirmWs, setDeleteConfirmWs] = useState<import("../types").WorkspaceDto | null>(null);
 
   useEffect(() => {
     void load();
@@ -110,11 +111,7 @@ export function Settings() {
               </div>
               <button
                 className="btn danger"
-                onClick={() => {
-                  if (confirm(`Delete workspace "${w.name}"? (Projects will not be deleted)`)) {
-                    void deleteWorkspace(w.id);
-                  }
-                }}
+                onClick={() => setDeleteConfirmWs(w)}
               >
                 Delete Workspace
               </button>
@@ -125,6 +122,38 @@ export function Settings() {
           )}
         </ul>
       </section>
+
+      {/* Delete Workspace Confirmation Modal */}
+      {deleteConfirmWs && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirmWs(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>🗑️ Delete Workspace</h3>
+            <p style={{ margin: "14px 0", fontSize: "13.5px" }}>
+              Are you sure you want to delete the workspace <b>"{deleteConfirmWs.name}"</b>?
+              <br />
+              <span className="muted" style={{ fontSize: "12px", display: "inline-block", marginTop: "8px" }}>
+                Your project files and folders on disk will <b>not</b> be deleted.
+              </span>
+            </p>
+            <div className="modal-buttons">
+              <button type="button" className="btn" onClick={() => setDeleteConfirmWs(null)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn danger"
+                onClick={async () => {
+                  const id = deleteConfirmWs.id;
+                  setDeleteConfirmWs(null);
+                  await deleteWorkspace(id);
+                }}
+              >
+                Delete Workspace
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section className="panel">
         <h2>Code Editor</h2>
