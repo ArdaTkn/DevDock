@@ -4,6 +4,7 @@ import type { Project, ScanLocation, WorkspaceDto } from "../types";
 import { api } from "../services/api";
 
 export type SortKey =
+  | "favorites"
   | "recent"
   | "name"
   | "dirty"

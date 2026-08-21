@@ -265,6 +265,12 @@ html, body, #root {
   border-color: var(--accent-dim);
   background: var(--accent-dim);
 }
+.chip-btn.star-active {
+  color: #f59e0b;
+  border-color: rgba(245, 158, 11, 0.4);
+  background: rgba(245, 158, 11, 0.15);
+  font-weight: 600;
+}
 .chip {
   font-size: 11px;
   border-radius: 5px;

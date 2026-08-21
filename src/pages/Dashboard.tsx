@@ -45,6 +45,7 @@ export function Dashboard() {
   const [confirmCleanAllStale, setConfirmCleanAllStale] = useState(false);
   const [scanningHogs, setScanningHogs] = useState(false);
   const [cleaningHog, setCleaningHog] = useState(false);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -77,6 +78,9 @@ export function Dashboard() {
     if (activeWorkspaceId !== null) {
       list = list.filter((p) => workspaceProjectIds.includes(p.id));
     }
+    if (favoritesOnly) {
+      list = list.filter((p) => p.is_favorite);
+    }
     if (techFilter) list = list.filter((p) => p.techs.some((t) => t.name === techFilter));
     const q = search.trim().toLowerCase();
     if (q) {
@@ -88,6 +92,14 @@ export function Dashboard() {
       );
     }
     switch (sort) {
+      case "favorites":
+        list = [...list].sort((a, b) => {
+          if (a.is_favorite === b.is_favorite) {
+            return b.last_modified - a.last_modified;
+          }
+          return a.is_favorite ? -1 : 1;
+        });
+        break;
       case "name":
         list = [...list].sort((a, b) => a.name.localeCompare(b.name));
         break;
@@ -106,9 +118,10 @@ export function Dashboard() {
         list = [...list].sort((a, b) => b.last_modified - a.last_modified);
     }
     return list;
-  }, [projects, activeWorkspaceId, workspaceProjectIds, search, techFilter, sort]);
+  }, [projects, activeWorkspaceId, workspaceProjectIds, favoritesOnly, search, techFilter, sort]);
 
   const sorting: Record<SortKey, string> = {
+    favorites: "⭐ Favorites first",
     recent: "Recently modified",
     name: "Name",
     dirty: "Most uncommitted",
@@ -694,16 +707,32 @@ export function Dashboard() {
       {techs.length > 0 && (
         <div className="chips-row">
           <button
-            className={`chip-btn ${techFilter === null ? "active" : ""}`}
-            onClick={() => setTechFilter(null)}
+            className={`chip-btn ${!favoritesOnly && techFilter === null ? "active" : ""}`}
+            onClick={() => {
+              setFavoritesOnly(false);
+              setTechFilter(null);
+            }}
           >
             All Techs
+          </button>
+          <button
+            className={`chip-btn ${favoritesOnly ? "active star-active" : ""}`}
+            onClick={() => {
+              setFavoritesOnly((prev) => !prev);
+              if (!favoritesOnly) setTechFilter(null);
+            }}
+            title="Filter to show only starred/favorite projects"
+          >
+            ⭐ Starred ({projects.filter((p) => p.is_favorite).length})
           </button>
           {techs.map((t) => (
             <button
               key={t}
-              className={`chip-btn ${techFilter === t ? "active" : ""}`}
-              onClick={() => setTechFilter(techFilter === t ? null : t)}
+              className={`chip-btn ${!favoritesOnly && techFilter === t ? "active" : ""}`}
+              onClick={() => {
+                setFavoritesOnly(false);
+                setTechFilter(techFilter === t ? null : t);
+              }}
             >
               {t}
             </button>
