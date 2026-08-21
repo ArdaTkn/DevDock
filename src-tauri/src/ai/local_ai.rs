@@ -27,15 +27,31 @@ impl LocalAiEngine {
         health: &crate::health::ProjectHealth,
         cache_report: &crate::system::ProjectCacheReport,
     ) -> LocalAiSummaryDto {
+        let p_path = Path::new(&project.path);
         let tech_names: Vec<String> = project.techs.iter().map(|t| t.name.clone()).collect();
-        let has_rust = tech_names.iter().any(|t| t == "Rust");
+        let has_rust = tech_names.iter().any(|t| t == "Rust") || p_path.join("Cargo.toml").exists();
         let has_node = tech_names
             .iter()
-            .any(|t| t == "Node.js" || t == "TypeScript" || t == "JavaScript");
-        let has_flutter = tech_names.iter().any(|t| t == "Flutter" || t == "Dart");
-        let has_python = tech_names.iter().any(|t| t == "Python");
-        let has_docker = tech_names.iter().any(|t| t == "Docker");
-        let has_tauri = Path::new(&project.path).join("src-tauri").exists();
+            .any(|t| t == "Node.js" || t == "TypeScript" || t == "JavaScript")
+            || p_path.join("package.json").exists();
+        let has_flutter = tech_names.iter().any(|t| t == "Flutter" || t == "Dart")
+            || p_path.join("pubspec.yaml").exists();
+        let has_python = tech_names.iter().any(|t| t == "Python")
+            || p_path.join("requirements.txt").exists()
+            || p_path.join("pyproject.toml").exists()
+            || p_path.join("main.py").exists();
+        let has_docker = tech_names.iter().any(|t| t == "Docker")
+            || p_path.join("Dockerfile").exists()
+            || p_path.join("docker-compose.yml").exists()
+            || p_path.join("compose.yaml").exists();
+        let has_go = tech_names.iter().any(|t| t == "Go") || p_path.join("go.mod").exists();
+        let has_dotnet = tech_names.iter().any(|t| t == ".NET" || t == "C#");
+        let has_gradle =
+            p_path.join("build.gradle").exists() || p_path.join("build.gradle.kts").exists();
+        let has_maven = p_path.join("pom.xml").exists();
+        let has_makefile = p_path.join("Makefile").exists();
+        let has_tauri = p_path.join("src-tauri").exists();
+        let has_run_sh = p_path.join("run.sh").exists() || p_path.join("start.sh").exists();
 
         // 1. Infer Architecture Pattern
         let architecture_pattern = if has_tauri && has_node {
@@ -46,25 +62,56 @@ impl LocalAiEngine {
             "Cross-Platform Mobile/Desktop Application (Flutter & Dart)".to_string()
         } else if has_python && has_docker {
             "Python Data / ML / Microservice Pipeline (Docker containerized)".to_string()
+        } else if has_go {
+            "High-Concurrency Microservice / CLI (Go)".to_string()
+        } else if has_dotnet {
+            "Enterprise Application / Backend (.NET & C#)".to_string()
+        } else if has_gradle || has_maven {
+            "JVM Enterprise Backend (Java / Kotlin)".to_string()
         } else if has_node {
             "Modern JavaScript / TypeScript Web Application".to_string()
+        } else if has_python {
+            "Python Scripting / Application".to_string()
         } else if has_rust {
             "Native Systems / CLI Utility (Rust)".to_string()
+        } else if has_docker {
+            "Containerized Infrastructure / Service".to_string()
         } else {
-            "Modular Software Repository".to_string()
+            "Modular Codebase / Repository".to_string()
         };
 
-        // 2. Determine Recommended Run Command
+        // 2. Determine Recommended Run Command with deep fallback
         let suggested_run_command = if has_tauri {
             "npm run tauri dev".to_string()
         } else if has_flutter {
             "flutter run".to_string()
         } else if has_rust {
             "cargo run".to_string()
+        } else if has_go {
+            "go run .".to_string()
+        } else if has_dotnet {
+            "dotnet run".to_string()
+        } else if has_gradle {
+            "./gradlew run".to_string()
+        } else if has_maven {
+            "mvn spring-boot:run".to_string()
         } else if has_python {
-            "python main.py".to_string()
+            if p_path.join("main.py").exists() {
+                "python3 main.py".to_string()
+            } else if p_path.join("app.py").exists() {
+                "python3 app.py".to_string()
+            } else {
+                "python3 -m pip install -r requirements.txt".to_string()
+            }
         } else if has_node {
             "npm run dev".to_string()
+        } else if p_path.join("docker-compose.yml").exists() || p_path.join("compose.yaml").exists()
+        {
+            "docker compose up".to_string()
+        } else if has_run_sh {
+            "./run.sh".to_string()
+        } else if has_makefile {
+            "make run".to_string()
         } else {
             "devdock open".to_string()
         };
@@ -93,7 +140,8 @@ impl LocalAiEngine {
             );
         }
         if has_docker {
-            key_highlights.push("🐳 Docker orchestration files detected".to_string());
+            key_highlights
+                .push("🐳 Docker orchestration / container configuration detected".to_string());
         }
 
         // 4. Maintenance & Optimization Tips
