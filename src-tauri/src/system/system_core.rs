@@ -12,19 +12,43 @@ pub struct SystemActions;
 /// Recognised editors on macOS.
 #[cfg(target_os = "macos")]
 const EDITORS: &[&str] = &[
-    "Visual Studio Code",
+    "Antigravity",
+    "Antigravity IDE",
     "Cursor",
+    "Visual Studio Code",
     "Zed",
     "Windsurf",
     "Sublime Text",
     "WebStorm",
+    "IntelliJ IDEA",
+    "PyCharm",
+    "CLion",
+    "PhpStorm",
+    "GoLand",
+    "Rider",
+    "RustRover",
     "Android Studio",
     "Xcode",
+    "Fleet",
+    "Nova",
+    "MacVim",
+    "Positron",
 ];
 
 /// Recognised terminals on macOS.
 #[cfg(target_os = "macos")]
-const TERMINALS: &[&str] = &["iTerm", "Warp", "Ghostty", "Hyper", "Alacritty", "Kitty"];
+const TERMINALS: &[&str] = &[
+    "iTerm",
+    "iTerm2",
+    "Warp",
+    "Ghostty",
+    "Alacritty",
+    "Kitty",
+    "Hyper",
+    "WezTerm",
+    "Tabby",
+    "Terminal",
+];
 
 impl SystemActions {
     fn spawn(cmd: &mut Command) -> Result<Child> {
@@ -34,17 +58,24 @@ impl SystemActions {
 
     #[cfg(target_os = "macos")]
     fn bundle_exists(app: &str) -> bool {
+        let app_file = format!("{app}.app");
         std::path::Path::new("/Applications")
-            .join(format!("{app}.app"))
+            .join(&app_file)
             .is_dir()
             || std::path::Path::new("/System/Applications")
-                .join(format!("{app}.app"))
+                .join(&app_file)
+                .is_dir()
+            || std::path::Path::new("/System/Applications/Utilities")
+                .join(&app_file)
+                .is_dir()
+            || std::path::Path::new("/Applications/Utilities")
+                .join(&app_file)
                 .is_dir()
             || std::env::var("HOME")
                 .map(|h| {
                     std::path::Path::new(&h)
                         .join("Applications")
-                        .join(format!("{app}.app"))
+                        .join(&app_file)
                         .is_dir()
                 })
                 .unwrap_or(false)
@@ -125,11 +156,13 @@ impl SystemActions {
     pub fn detect_editors() -> Vec<String> {
         #[cfg(target_os = "macos")]
         {
-            EDITORS
-                .iter()
-                .filter(|n| Self::bundle_exists(n))
-                .map(|s| s.to_string())
-                .collect()
+            let mut list = Vec::new();
+            for n in EDITORS {
+                if Self::bundle_exists(n) && !list.contains(&n.to_string()) {
+                    list.push(n.to_string());
+                }
+            }
+            list
         }
         #[cfg(not(target_os = "macos"))]
         {
@@ -145,11 +178,13 @@ impl SystemActions {
     pub fn detect_terminals() -> Vec<String> {
         #[cfg(target_os = "macos")]
         {
-            TERMINALS
-                .iter()
-                .filter(|n| Self::bundle_exists(n))
-                .map(|s| s.to_string())
-                .collect()
+            let mut list = Vec::new();
+            for n in TERMINALS {
+                if Self::bundle_exists(n) && !list.contains(&n.to_string()) {
+                    list.push(n.to_string());
+                }
+            }
+            list
         }
         #[cfg(target_os = "linux")]
         {
@@ -224,7 +259,7 @@ impl SystemActions {
 
         match target {
             // iTerm exposes a rich AppleScript: new window + write the cd command.
-            Some("iTerm") => {
+            Some("iTerm") | Some("iTerm2") => {
                 let script = format!(
                     "tell application \"iTerm\"\n\
                      \tactivate\n\
@@ -241,19 +276,19 @@ impl SystemActions {
                 let _ = Self::spawn(&mut cmd);
                 Ok(())
             }
-            // Any other recognised terminal: launch it pointed at the directory.
-            Some(name) => {
-                let mut cmd = Command::new("open");
-                cmd.args(["-a", name]).arg(path);
+            // Apple Default Terminal
+            Some("Terminal") | None => {
+                let script = format!("tell application \"Terminal\" to do script \"{embed}\"");
+                let mut cmd = Command::new("osascript");
+                cmd.args(["-e", &script]);
                 Self::spawn(&mut cmd)
                     .map(|_| ())
                     .map_err(|_| Error::TerminalNotFound)
             }
-            // No third-party terminal → the macOS default, Terminal.app.
-            None => {
-                let script = format!("tell application \"Terminal\" to do script \"{embed}\"");
-                let mut cmd = Command::new("osascript");
-                cmd.args(["-e", &script]);
+            // Any other recognised terminal: launch it pointed at the directory.
+            Some(name) => {
+                let mut cmd = Command::new("open");
+                cmd.args(["-a", name]).arg(path);
                 Self::spawn(&mut cmd)
                     .map(|_| ())
                     .map_err(|_| Error::TerminalNotFound)
