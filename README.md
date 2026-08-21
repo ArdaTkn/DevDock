@@ -165,14 +165,18 @@ Read our full [Security Policy](SECURITY.md) and [`docs/SECURITY.md`](docs/SECUR
 
 ---
 
-## 🗺️ Roadmap
+## 🗺️ Roadmap (v0.5 ➔ v1.0)
 
 - [x] **v0.1.0** — Core scanner, Git metadata parser, project card grid, technology detectors.
 - [x] **v0.2.0** — Command Palette (`⌘K`), FileSystem Watcher (`notify`), Recently Opened strip, Code Editor & Terminal selector.
 - [x] **v0.3.0** — Smart Listening Port scanner (`localhost:3000`, `5173`), Docker container inspector, deterministic project health audit.
 - [x] **v0.4.0** — GitHub integration, custom project tags, auto-saved Markdown notes, configurable custom shell commands.
-- [x] **v0.5.0** — Project dependency visualizer, workspace grouping, custom theme customization.
-- [ ] **v1.0.0** — Opt-in local AI assistance (never enabled by default).
+- [x] **v0.5.0** — Project dependency visualizer, 6 custom dark themes, global terminal CLI (`devdock`, `devdock update`, `devdock ports`).
+- [ ] **v0.6.0** *(Next)* — Workspaces & Project Collections, Bulk Git sync ("Pull All", "Stash All"), multi-service launcher.
+- [ ] **v0.7.0** — `.env.example` vs `.env` diff inspector, GitIgnore secret leak prevention, runtime toolchain version warnings.
+- [ ] **v0.8.0** — Disk Space Hog visualizer, 1-click safe build cache cleaner (`node_modules`, `target`), stale project detector.
+- [ ] **v0.9.0** — macOS Menu Bar & Windows Tray popover widget, global `⌥ Space` floating HUD, dev server crash notifications.
+- [ ] **v1.0.0** — Privacy-first offline local AI (Ollama / Apple Neural Engine), semantic codebase search, interactive architecture graph.
 
 Check out [`docs/PLAN.md`](docs/PLAN.md) for full roadmap details.
 

@@ -437,38 +437,18 @@ PULL_REQUEST_TEMPLATE.md}. Owner: ArdaTkn, repo: `DevDock` (public).
 
 ---
 
-## 20. Future extensibility
+## 21. Roadmap from v0.5 to v1.0
 
-- Detector trait → future plugin detectors.
-- `.devdock` YAML (name/commands/services/ports) — reads as another metadata source.
-- Optional AI layer behind a `ProjectAdvisor` trait (local/OAI/Anthropic/Google),
-  opt-in only, source never uploaded by default.
-- Read-write git commands behind confirmations.
-- tags, notes, richer env detection (Phase 4+).
+```
+ [v0.5.0] Released  ──▶ [v0.6.0] Workspaces & Bulk Git Sync
+                         ├──▶ [v0.7.0] .env Sentinel & Secret Safety
+                         ├──▶ [v0.8.0] Disk Hog & Safe Cache Janitor
+                         ├──▶ [v0.9.0] macOS Menu Bar & Hotkey HUD
+                         └──▶ [v1.0.0] Privacy-First Local AI & Project Graph
+```
 
----
-
-## Smallest useful first implementation (Phase 2 kickoff)
-
-Materialise the repo skeleton + **spine**, proven end-to-end on a few of the user's
-real directories, before adding every detector:
-
-1. `cargo init` a Tauri 2 app (needs the Rust toolchain — currently missing on this machine).
-2. Storage layer + `scan_locations`/`projects`/`project_techs`/`git_metadata` schema.
-3. Scanner + **Node + Git** detectors (the user's dominant stack) over `~/Projects`
-   and a couple real dirs, writing to SQLite.
-4. Minimal React dashboard rendering discovered projects from SQLite, with:
-   open project / open terminal / open editor.
-5. Tests + CI on that spine; then iterate detectors (flutter, python, rust, docker…)
-   one at a time with fixtures.
-
-**Gate:** the Rust toolchain + Tauri CLI are not installed on this machine, so Phase 2
-requires installing rustup (≈1 GB toolchain + Xcode CLT if absent). This is the one
-environmental prerequisite before we can compile anything real.
-
----
-
-### Next step
-
-Approve installing the Rust toolchain (rustup) and bootstrap the Tauri 2 skeleton, then
-build the section-20 spine and verify it against your real projects.
+- **v0.6.0 (Workspaces & Multi-Repo Orchestration):** Customizable project workspaces/collections (`Client`, `Open Source`, `Backend`), bulk Git pull/status sync, multi-service runner.
+- **v0.7.0 (.env Sentinel & Secret Safety):** `.env.example` vs `.env` diff checking, accidental secret leak gitignore protection, Node/Python/Rust runtime version alerts.
+- **v0.8.0 (Disk Hog & Safe Cache Janitor):** Visual disk usage analyzer (`node_modules`, `target/debug`, `.venv`), 1-click safe build cache cleaner (saving 20GB-100GB+), stale/abandoned project detector.
+- **v0.9.0 (macOS Menu Bar & Global Hotkey HUD):** System tray/menu bar popover widget, global `⌥ Space` floating HUD, local dev server crash notifications.
+- **v1.0.0 (Local-First AI & Project Knowledge Graph):** 100% offline local AI (Ollama/Apple Neural Engine), natural language semantic search, interactive microservice architecture graph, automated README/docs doctor.
