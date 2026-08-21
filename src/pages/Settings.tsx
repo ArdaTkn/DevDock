@@ -4,7 +4,16 @@ import { useSystemStore } from "../stores/systemStore";
 import { useThemeStore, THEME_OPTIONS } from "../stores/themeStore";
 
 export function Settings() {
-  const { locations, error, load, addLocation, removeLocation } = useProjectsStore();
+  const {
+    locations,
+    workspaces,
+    error,
+    load,
+    loadWorkspaces,
+    deleteWorkspace,
+    addLocation,
+    removeLocation,
+  } = useProjectsStore();
   const {
     terminals,
     terminalPref,
@@ -23,6 +32,7 @@ export function Settings() {
 
   useEffect(() => {
     void load();
+    void loadWorkspaces();
     void loadEditors();
     void loadEditorPref();
     void loadTerminals();
@@ -76,6 +86,44 @@ export function Settings() {
             Add Folder
           </button>
         </div>
+      </section>
+
+      <section className="panel">
+        <h2>📁 Workspace Management</h2>
+        <p className="muted">
+          Manage your project workspaces and collections.
+        </p>
+        <ul className="loc-list">
+          {workspaces.map((w) => (
+            <li key={w.id} className="loc-row">
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "50%",
+                    backgroundColor: w.color,
+                    display: "inline-block",
+                  }}
+                />
+                <b>{w.name}</b>
+              </div>
+              <button
+                className="btn danger"
+                onClick={() => {
+                  if (confirm(`Delete workspace "${w.name}"? (Projects will not be deleted)`)) {
+                    void deleteWorkspace(w.id);
+                  }
+                }}
+              >
+                Delete Workspace
+              </button>
+            </li>
+          ))}
+          {workspaces.length === 0 && (
+            <li className="muted">No custom workspaces created yet.</li>
+          )}
+        </ul>
       </section>
 
       <section className="panel">

@@ -163,7 +163,8 @@ impl AppDb {
     // --- Tags ---
     pub fn get_tags(&self, project_id: i64) -> Result<Vec<String>> {
         let conn = self.conn();
-        let mut stmt = conn.prepare("SELECT tag FROM project_tags WHERE project_id=?1 ORDER BY tag")?;
+        let mut stmt =
+            conn.prepare("SELECT tag FROM project_tags WHERE project_id=?1 ORDER BY tag")?;
         let rows = stmt.query_map(rusqlite::params![project_id], |r| r.get(0))?;
         let mut tags = Vec::new();
         for r in rows {
@@ -283,7 +284,8 @@ impl AppDb {
 
     pub fn get_project_workspaces(&self, project_id: i64) -> Result<Vec<i64>> {
         let conn = self.conn();
-        let mut stmt = conn.prepare("SELECT workspace_id FROM project_workspaces WHERE project_id=?1")?;
+        let mut stmt =
+            conn.prepare("SELECT workspace_id FROM project_workspaces WHERE project_id=?1")?;
         let rows = stmt.query_map(rusqlite::params![project_id], |r| r.get(0))?;
         let mut list = Vec::new();
         for r in rows {
@@ -294,7 +296,8 @@ impl AppDb {
 
     pub fn list_workspace_project_ids(&self, workspace_id: i64) -> Result<Vec<i64>> {
         let conn = self.conn();
-        let mut stmt = conn.prepare("SELECT project_id FROM project_workspaces WHERE workspace_id=?1")?;
+        let mut stmt =
+            conn.prepare("SELECT project_id FROM project_workspaces WHERE workspace_id=?1")?;
         let rows = stmt.query_map(rusqlite::params![workspace_id], |r| r.get(0))?;
         let mut list = Vec::new();
         for r in rows {
@@ -305,7 +308,10 @@ impl AppDb {
 
     pub fn set_project_workspaces(&self, project_id: i64, workspace_ids: &[i64]) -> Result<()> {
         let conn = self.conn();
-        conn.execute("DELETE FROM project_workspaces WHERE project_id=?1", rusqlite::params![project_id])?;
+        conn.execute(
+            "DELETE FROM project_workspaces WHERE project_id=?1",
+            rusqlite::params![project_id],
+        )?;
         for wid in workspace_ids {
             conn.execute(
                 "INSERT INTO project_workspaces(project_id, workspace_id) VALUES(?1, ?2)",

@@ -203,20 +203,18 @@ export function Dashboard() {
                 <span className="ws-dot" style={{ backgroundColor: w.color }} />
                 {w.name}
               </button>
-              {activeWorkspaceId === w.id && (
-                <button
-                  className="ws-delete-btn"
-                  title="Delete this workspace"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (confirm(`Delete workspace "${w.name}"? (Projects will not be deleted)`)) {
-                      void deleteWorkspace(w.id);
-                    }
-                  }}
-                >
-                  ✕
-                </button>
-              )}
+              <button
+                className="ws-delete-btn"
+                title={`Delete workspace "${w.name}"`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (confirm(`Are you sure you want to delete workspace "${w.name}"? (Your project files will not be deleted)`)) {
+                    void deleteWorkspace(w.id);
+                  }
+                }}
+              >
+                ×
+              </button>
             </div>
           ))}
           <button className="ws-tab-add" onClick={() => setShowWsModal(true)}>
@@ -224,8 +222,21 @@ export function Dashboard() {
           </button>
         </div>
 
-        {/* Bulk Git Actions Bar */}
+        {/* Bulk Git Actions & Workspace Actions Bar */}
         <div className="ws-actions">
+          {activeWorkspace && (
+            <button
+              className="btn btn-danger-soft ws-action-btn"
+              onClick={() => {
+                if (confirm(`Delete workspace "${activeWorkspace.name}"? (Projects will not be deleted)`)) {
+                  void deleteWorkspace(activeWorkspace.id);
+                }
+              }}
+              title={`Delete workspace "${activeWorkspace.name}"`}
+            >
+              🗑️ Delete Workspace
+            </button>
+          )}
           <button
             className="btn ws-action-btn"
             disabled={bulkPulling || filtered.length === 0}

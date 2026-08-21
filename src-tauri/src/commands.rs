@@ -413,10 +413,7 @@ pub fn get_project_workspaces(app: AppHandle, project_id: i64) -> Result<Vec<i64
 }
 
 #[tauri::command]
-pub fn list_workspace_project_ids(
-    app: AppHandle,
-    workspace_id: i64,
-) -> Result<Vec<i64>, ErrorDto> {
+pub fn list_workspace_project_ids(app: AppHandle, workspace_id: i64) -> Result<Vec<i64>, ErrorDto> {
     Ok(state(&app).db.list_workspace_project_ids(workspace_id)?)
 }
 
@@ -474,7 +471,8 @@ pub fn bulk_git_status(paths: Vec<String>) -> Result<Vec<BulkGitStatusResult>, E
     let mut results = Vec::new();
     for p in paths {
         if let Ok(Some(git)) = crate::git::GitCommand::inspect(std::path::Path::new(&p)) {
-            let uncommitted = (git.modified_count + git.staged_count + git.untracked_count) as usize;
+            let uncommitted =
+                (git.modified_count + git.staged_count + git.untracked_count) as usize;
             let is_dirty = uncommitted > 0;
             let branch = git.branch.unwrap_or_else(|| "detached".to_string());
             results.push(BulkGitStatusResult {

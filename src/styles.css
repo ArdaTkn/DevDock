@@ -1127,13 +1127,26 @@ html, body, #root {
   background: transparent;
   border: none;
   color: var(--muted);
-  font-size: 11px;
-  margin-left: -4px;
+  font-size: 14px;
+  line-height: 1;
   padding: 4px 6px;
   cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.12s ease;
 }
 .ws-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
+}
+.btn-danger-soft {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+.btn-danger-soft:hover {
+  background: rgba(239, 68, 68, 0.22);
+  border-color: #ef4444;
+  color: #fff;
 }
 .ws-tab-add {
   background: transparent;
