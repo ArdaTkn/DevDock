@@ -188,3 +188,37 @@ export interface DiskHogReport {
   stale_projects_count: number;
   items: DiskHogItem[];
 }
+
+export interface GraphNode {
+  id: string;
+  label: string;
+  group: string; // "project", "tech", "workspace", "port"
+  node_type: string;
+  size: number;
+  color: string;
+  details: string;
+}
+
+export interface GraphLink {
+  source: string;
+  target: string;
+  label: string;
+  weight: number;
+}
+
+export interface GraphDataDto {
+  nodes: GraphNode[];
+  links: GraphLink[];
+  total_projects: number;
+  total_techs: number;
+  total_workspaces: number;
+}
+
+export interface LocalAiSummaryDto {
+  project_name: string;
+  architecture_pattern: string;
+  suggested_run_command: string;
+  key_highlights: string[];
+  maintenance_tips: string[];
+  is_ai_generated_offline: boolean;
+}

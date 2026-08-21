@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 import { Dashboard } from "./pages/Dashboard";
 import { ProjectDetail } from "./pages/ProjectDetail";
+import { KnowledgeGraph } from "./pages/KnowledgeGraph";
 import { Settings } from "./pages/Settings";
 import { CommandPalette } from "./components/CommandPalette";
 import { useThemeStore } from "./stores/themeStore";
@@ -38,6 +39,7 @@ function Layout() {
           <NavLink to="/" end>
             Projects
           </NavLink>
+          <NavLink to="/graph">Graph</NavLink>
           <NavLink to="/settings">Settings</NavLink>
         </div>
         <button
@@ -54,6 +56,7 @@ function Layout() {
       <main className="main">
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/graph" element={<KnowledgeGraph />} />
           <Route path="/project/:id" element={<ProjectDetail />} />
           <Route path="/settings" element={<Settings />} />
         </Routes>

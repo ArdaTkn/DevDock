@@ -562,6 +562,54 @@ pub fn get_disk_hogs_report(paths: Vec<String>) -> Result<crate::system::DiskHog
     Ok(crate::system::CacheJanitor::scan_all_hogs(&path_bufs))
 }
 
+#[tauri::command]
+pub fn get_architecture_graph(app: AppHandle) -> Result<crate::graph::GraphDataDto, ErrorDto> {
+    let projects = ProjectRepo::list_projects(&state(&app).db, None)?;
+    let workspaces = state(&app).db.list_workspaces()?;
+
+    let mut project_workspaces: std::collections::HashMap<i64, Vec<i64>> =
+        std::collections::HashMap::new();
+    for p in &projects {
+        let ws_list = state(&app).db.get_project_workspaces(p.id)?;
+        project_workspaces.insert(p.id, ws_list);
+    }
+
+    let ports = crate::processes::ProcScanner::list_listening_ports();
+
+    Ok(crate::graph::GraphEngine::build_knowledge_graph(
+        &projects,
+        &workspaces,
+        &project_workspaces,
+        &ports,
+    ))
+}
+
+#[tauri::command]
+pub fn get_local_ai_summary(
+    app: AppHandle,
+    path: String,
+) -> Result<crate::ai::LocalAiSummaryDto, ErrorDto> {
+    let p_buf = std::path::PathBuf::from(&path);
+    let id = find_project_id(&state(&app).db, &path)?.ok_or_else(|| ErrorDto {
+        message: "Project not found".into(),
+        hint: None,
+    })?;
+    let project = ProjectRepo::get_project(&state(&app).db, id)?.ok_or_else(|| ErrorDto {
+        message: "Project not found".into(),
+        hint: None,
+    })?;
+
+    let is_dirty = project.git.as_ref().map(|g| !g.clean()).unwrap_or(false);
+    let health = crate::health::HealthChecker::check_project(&path, is_dirty);
+    let cache_report = crate::system::CacheJanitor::scan_project_cache(&p_buf);
+
+    Ok(crate::ai::LocalAiEngine::analyze_project(
+        &project,
+        &health,
+        &cache_report,
+    ))
+}
+
 fn find_project_id(db: &AppDb, path: &str) -> crate::error::Result<Option<i64>> {
     let conn = db.conn();
     let mut stmt = conn.prepare("SELECT id FROM projects WHERE path=?1")?;

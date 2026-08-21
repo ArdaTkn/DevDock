@@ -1640,3 +1640,164 @@ html, body, #root {
   font-weight: 700;
   color: #ef4444;
 }
+
+/* Knowledge Graph Styles */
+.graph-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 40px);
+}
+.graph-container {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+  margin-top: 14px;
+}
+.graph-canvas-wrapper {
+  background: var(--bg-raise);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.graph-svg {
+  width: 100%;
+  height: 100%;
+  min-height: 520px;
+}
+.graph-node-circle {
+  transition: r 0.2s ease, stroke-width 0.2s ease;
+}
+.graph-node-group:hover .graph-node-circle {
+  filter: drop-shadow(0 0 6px rgba(0, 242, 254, 0.6));
+}
+.graph-node-label {
+  pointer-events: none;
+  user-select: none;
+  font-family: var(--font-sans, system-ui);
+}
+.graph-inspector {
+  background: var(--bg-raise);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 16px;
+  overflow-y: auto;
+}
+.graph-inspector-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  height: 100%;
+  gap: 10px;
+}
+.graph-legend {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.graph-details-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.graph-node-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+.graph-connections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.graph-conn-chip {
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.graph-conn-chip:hover {
+  background: var(--bg-raise);
+  border-color: #00f2fe;
+}
+
+/* Local AI Panel Styles */
+.ai-panel {
+  border-left: 3px solid #8b5cf6;
+  background: linear-gradient(to bottom, rgba(139, 92, 246, 0.04), transparent);
+}
+.ai-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 10px;
+}
+.ai-summary-card {
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ai-card-label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.ai-arch-badge {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #8b5cf6;
+  margin-top: 2px;
+}
+.ai-code-badge {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  background: var(--bg-raise);
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--text);
+  border: 1px solid var(--border-soft);
+}
+.ai-bullets-list {
+  margin: 6px 0 0 18px;
+  padding: 0;
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.6;
+}
+.ai-bullets-list.tips {
+  color: var(--muted);
+}

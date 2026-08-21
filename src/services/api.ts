@@ -173,6 +173,12 @@ export const api = {
 
   toggleWindow: () =>
     invoke<void>("toggle_window"),
+
+  getArchitectureGraph: () =>
+    invoke<import("../types").GraphDataDto>("get_architecture_graph"),
+
+  getLocalAiSummary: (path: string) =>
+    invoke<import("../types").LocalAiSummaryDto>("get_local_ai_summary", { path }),
 };
 
 /** Turns a Rust ErrorDto into a readable string for inline UI display. */

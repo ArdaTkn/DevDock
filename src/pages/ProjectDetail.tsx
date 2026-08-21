@@ -33,6 +33,7 @@ export function ProjectDetail() {
   const [gitignoreReport, setGitignoreReport] = useState<GitIgnoreAuditReport | null>(null);
   const [runtimeVersions, setRuntimeVersions] = useState<RuntimeVersionInfo[]>([]);
   const [cacheReport, setCacheReport] = useState<import("../types").ProjectCacheReport | null>(null);
+  const [localAiSummary, setLocalAiSummary] = useState<import("../types").LocalAiSummaryDto | null>(null);
   const [cleanTarget, setCleanTarget] = useState<import("../types").CacheFolderInfo | null>(null);
   const [cleanAllConfirm, setCleanAllConfirm] = useState(false);
   const [cleaning, setCleaning] = useState(false);
@@ -64,6 +65,7 @@ export function ProjectDetail() {
           void api.checkSecretGitIgnore(p.path).then(setGitignoreReport);
           void api.checkRuntimeVersions(p.path).then(setRuntimeVersions);
           void api.getProjectCacheInfo(p.path).then(setCacheReport);
+          void api.getLocalAiSummary(p.path).then(setLocalAiSummary);
         }
       } catch (e) {
         setError(String(e));
@@ -238,6 +240,63 @@ export function ProjectDetail() {
           </div>
         )}
       </section>
+
+      {/* 🤖 Local AI Architecture & Health Intelligence */}
+      {localAiSummary && (
+        <section className="panel ai-panel">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h2>🤖 Local AI Architecture & Insights</h2>
+            <span className="badge-clean">🔒 100% Offline & Private</span>
+          </div>
+          <p className="muted" style={{ marginBottom: "14px" }}>
+            Automated offline heuristics analyzing code structure, dependency graph, and execution pipeline.
+          </p>
+
+          <div className="ai-summary-grid">
+            <div className="ai-summary-card">
+              <span className="ai-card-label">Inferred Architecture Pattern</span>
+              <div className="ai-arch-badge">{localAiSummary.architecture_pattern}</div>
+            </div>
+
+            <div className="ai-summary-card">
+              <span className="ai-card-label">Recommended Run Command</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
+                <code className="ai-code-badge">{localAiSummary.suggested_run_command}</code>
+                <button
+                  className="btn btn-sm"
+                  onClick={() => void api.runProjectScript(project.path, localAiSummary.suggested_run_command)}
+                >
+                  Run ↵
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="ai-highlights-section" style={{ marginTop: "14px" }}>
+            <span className="muted small" style={{ fontWeight: 600, display: "block", marginBottom: "6px" }}>
+              Key Architecture Highlights:
+            </span>
+            <ul className="ai-bullets-list">
+              {localAiSummary.key_highlights.map((h, i) => (
+                <li key={i}>{h}</li>
+              ))}
+            </ul>
+          </div>
+
+          {localAiSummary.maintenance_tips.length > 0 && (
+            <div className="ai-tips-section" style={{ marginTop: "12px" }}>
+              <span className="muted small" style={{ fontWeight: 600, display: "block", marginBottom: "6px" }}>
+                AI Maintenance & Optimization Tips:
+              </span>
+              <ul className="ai-bullets-list tips">
+                {localAiSummary.maintenance_tips.map((t, i) => (
+                  <li key={i}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="panel">
         <h2>Tags & Categories</h2>

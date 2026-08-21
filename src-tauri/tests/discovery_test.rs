@@ -247,3 +247,81 @@ fn test_cache_janitor_scan_and_clean() {
     assert_eq!(rep2.cache_folders.len(), 1);
     assert_eq!(rep2.cache_folders[0].name, "target");
 }
+
+#[test]
+fn test_knowledge_graph_building() {
+    use devdock_lib::models::{Project, Tech, TechKind};
+    use std::collections::HashMap;
+
+    let proj = Project {
+        id: 1,
+        name: "test-app".into(),
+        path: "/path/to/test-app".into(),
+        relative_path: None,
+        size_bytes: 1024,
+        last_modified: 0,
+        techs: vec![Tech {
+            name: "Rust".into(),
+            kind: TechKind::Language,
+        }],
+        git: None,
+        is_favorite: false,
+    };
+
+    let ws = (10i64, "Backend".to_string(), "#10b981".to_string());
+
+    let mut ws_map = HashMap::new();
+    ws_map.insert(1, vec![10]);
+
+    let graph =
+        devdock_lib::graph::GraphEngine::build_knowledge_graph(&[proj], &[ws], &ws_map, &[]);
+
+    assert_eq!(graph.total_projects, 1);
+    assert_eq!(graph.total_workspaces, 1);
+    assert_eq!(graph.total_techs, 1);
+    assert!(graph.links.len() >= 2); // 1 to workspace, 1 to tech
+}
+
+#[test]
+fn test_local_ai_architecture_analysis() {
+    use devdock_lib::health::ProjectHealth;
+    use devdock_lib::models::{Project, Tech, TechKind};
+    use devdock_lib::system::ProjectCacheReport;
+
+    let proj = Project {
+        id: 2,
+        name: "my-flutter-app".into(),
+        path: "/path/to/my-flutter-app".into(),
+        relative_path: None,
+        size_bytes: 2048,
+        last_modified: 0,
+        techs: vec![Tech {
+            name: "Flutter".into(),
+            kind: TechKind::Framework,
+        }],
+        git: None,
+        is_favorite: false,
+    };
+
+    let health = ProjectHealth {
+        score: 95,
+        status: "Healthy".into(),
+        deps_installed: true,
+        has_readme: true,
+        is_git_clean: true,
+        issues: vec![],
+    };
+
+    let cache = ProjectCacheReport {
+        total_size_bytes: 1000,
+        total_human_size: "1 KB".into(),
+        reclaimable_bytes: 0,
+        reclaimable_human_size: "0 B".into(),
+        cache_folders: vec![],
+    };
+
+    let ai = devdock_lib::ai::LocalAiEngine::analyze_project(&proj, &health, &cache);
+    assert_eq!(ai.suggested_run_command, "flutter run");
+    assert!(ai.architecture_pattern.contains("Flutter"));
+    assert!(ai.is_ai_generated_offline);
+}

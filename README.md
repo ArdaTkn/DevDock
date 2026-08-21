@@ -8,7 +8,7 @@
 
 *Automatically discover, understand, monitor, and launch every coding project on your computer — 100% locally & privately*
 
-[![Version](https://img.shields.io/badge/version-v0.9.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock)
+[![Version](https://img.shields.io/badge/version-v1.0.0-00f2fe.svg?style=for-the-badge&logo=tauri)](https://github.com/ArdaTkn/DevDock)
 [![License](https://img.shields.io/badge/license-MIT-6ee7b7.svg?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-9333ea.svg?style=for-the-badge)](https://github.com/ArdaTkn/DevDock)
 [![CI Status](https://img.shields.io/github/actions/workflow/status/ArdaTkn/DevDock/ci.yml?branch=main&style=for-the-badge&logo=github)](https://github.com/ArdaTkn/DevDock/actions)
@@ -39,6 +39,7 @@ Developers accumulate dozens or hundreds of coding projects across `~/Projects`,
 Without DevDock, answering simple questions requires constant terminal navigation:
 - *Where is that old Flutter app or Rust CLI script I wrote last year?*
 - *Which local ports (`localhost:3000`, `5173`, `8000`) are active right now?*
+- *How are my microservices, frameworks, and workspace repositories connected?*
 - *How many gigabytes of dead `node_modules` or `target` build cache are hogging my disk?*
 - *Do I have uncommitted Git changes before pushing?*
 - *Is this project missing `.env` keys from `.env.example` or leaking keys to Git?*
@@ -49,6 +50,15 @@ Without DevDock, answering simple questions requires constant terminal navigatio
 ---
 
 ## ✨ Core Features
+
+### 🕸️ Interactive Architecture Knowledge Graph
+- **Visual Topological Map:** Render real-time interactive node-link diagrams connecting Projects, Workspaces, Technologies, and Active Listening Ports.
+- **Cross-Project Clustering:** Discover shared tech stacks, monorepo connections, and active port bindings at a glance.
+- **1-Click Deep Navigation:** Click any graph node to inspect dependencies and jump directly into the full Project Detail workspace.
+
+### 🤖 100% Privacy-First Offline Local AI Insights
+- **Zero-Cloud Local Heuristics Engine:** Generates instant architecture pattern inferences, recommended run commands, and maintenance tips without sending a single byte over the network.
+- **Intelligent Health Diagnostics:** Proactively identifies repository risks, missing dependencies, unignored secret files, and uncommitted git branches.
 
 ### 🧭 macOS Menu Bar & Windows System Tray / Quick HUD
 - **Background Menu Bar Resident:** DevDock sits in your macOS menu bar or Windows system tray for zero-friction access.
@@ -197,7 +207,7 @@ Read our full [Security Policy](SECURITY.md) and [`docs/SECURITY.md`](docs/SECUR
 - [x] **v0.7.0** — `.env.example` vs `.env` diff inspector, GitIgnore secret leak prevention, runtime toolchain version warnings.
 - [x] **v0.8.0** — Disk Space Hog visualizer, 1-click safe build cache cleaner (`node_modules`, `target`, `.dart_tool`), stale project detector.
 - [x] **v0.9.0** — macOS Menu Bar & Windows Tray popover widget, 1-click toggle, quick tray menu.
-- [ ] **v1.0.0** *(Next - Final Milestone)* — Privacy-first offline local AI, semantic codebase search, interactive architecture graph.
+- [x] **v1.0.0** — Interactive Architecture Knowledge Graph & 100% Privacy-First Offline Local AI Insights! 🏆🎉
 
 Check out [`docs/PLAN.md`](docs/PLAN.md) for full roadmap details.
 
