@@ -41,6 +41,8 @@ export function Dashboard() {
   const [bulkPullResults, setBulkPullResults] = useState<BulkGitResult[] | null>(null);
   const [bulkStatusList, setBulkStatusList] = useState<BulkGitStatusResult[] | null>(null);
   const [diskHogsReport, setDiskHogsReport] = useState<import("../types").DiskHogReport | null>(null);
+  const [confirmCleanItem, setConfirmCleanItem] = useState<import("../types").DiskHogItem | null>(null);
+  const [confirmCleanAllStale, setConfirmCleanAllStale] = useState(false);
   const [scanningHogs, setScanningHogs] = useState(false);
   const [cleaningHog, setCleaningHog] = useState(false);
 
@@ -333,7 +335,7 @@ export function Dashboard() {
                 <button
                   className="btn btn-sm btn-danger-soft"
                   disabled={cleaningHog}
-                  onClick={() => void handleCleanAllStaleCaches()}
+                  onClick={() => setConfirmCleanAllStale(true)}
                 >
                   {cleaningHog ? "Cleaning…" : `Clean All Stale (${diskHogsReport.stale_projects_count} projects)`}
                 </button>
@@ -380,11 +382,7 @@ export function Dashboard() {
                     <button
                       className="btn btn-sm danger"
                       disabled={cleaningHog}
-                      onClick={async () => {
-                        for (const f of item.cache_folders) {
-                          await handleCleanHogFolder(item.project_path, f.name);
-                        }
-                      }}
+                      onClick={() => setConfirmCleanItem(item)}
                     >
                       Clean Cache
                     </button>
@@ -401,6 +399,82 @@ export function Dashboard() {
             <div className="modal-buttons" style={{ marginTop: "16px" }}>
               <button className="btn primary" onClick={() => setDiskHogsReport(null)}>
                 Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal for Cleaning Single Project Cache */}
+      {confirmCleanItem && (
+        <div className="modal-overlay" onClick={() => setConfirmCleanItem(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>🧹 Clean Cache: {confirmCleanItem.project_name}</h3>
+            <p style={{ margin: "12px 0 6px 0", fontSize: "13.5px" }}>
+              Are you sure you want to clean build cache for <b>{confirmCleanItem.project_name}</b>?
+            </p>
+            <div className="unignored-secrets-list" style={{ margin: "10px 0" }}>
+              <span className="muted small" style={{ display: "block", marginBottom: "6px" }}>
+                Folders to be removed ({confirmCleanItem.reclaimable_human_size} total):
+              </span>
+              {confirmCleanItem.cache_folders.map((f) => (
+                <div key={f.name} className="unignored-secret-row">
+                  <span>📁 <b>{f.name}</b> ({f.category})</span>
+                  <span style={{ color: "#ef4444", fontWeight: "bold" }}>{f.human_size}</span>
+                </div>
+              ))}
+            </div>
+            <p className="muted" style={{ fontSize: "12px", marginTop: "10px" }}>
+              🛡️ <b>100% Safe:</b> Source code and Git history are never touched. These folders can be re-downloaded or rebuilt anytime.
+            </p>
+            <div className="modal-buttons" style={{ marginTop: "16px" }}>
+              <button type="button" className="btn" disabled={cleaningHog} onClick={() => setConfirmCleanItem(null)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn danger"
+                disabled={cleaningHog}
+                onClick={async () => {
+                  const target = confirmCleanItem;
+                  setConfirmCleanItem(null);
+                  for (const f of target.cache_folders) {
+                    await handleCleanHogFolder(target.project_path, f.name);
+                  }
+                }}
+              >
+                {cleaningHog ? "Cleaning…" : `Yes, Free ${confirmCleanItem.reclaimable_human_size}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal for Cleaning All Stale Projects Cache */}
+      {confirmCleanAllStale && diskHogsReport && (
+        <div className="modal-overlay" onClick={() => setConfirmCleanAllStale(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>⏰ Clean Stale Projects Cache</h3>
+            <p style={{ margin: "12px 0", fontSize: "13.5px" }}>
+              Are you sure you want to clean build caches for all <b>{diskHogsReport.stale_projects_count} stale projects</b> untouched for over 90 days?
+            </p>
+            <p className="muted" style={{ fontSize: "12px" }}>
+              🛡️ <b>100% Safe:</b> Source code is completely unaffected. You will reclaim gigabytes of disk space safely.
+            </p>
+            <div className="modal-buttons" style={{ marginTop: "16px" }}>
+              <button type="button" className="btn" disabled={cleaningHog} onClick={() => setConfirmCleanAllStale(false)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn danger"
+                disabled={cleaningHog}
+                onClick={async () => {
+                  setConfirmCleanAllStale(false);
+                  await handleCleanAllStaleCaches();
+                }}
+              >
+                {cleaningHog ? "Cleaning…" : "Clean All Stale Projects"}
               </button>
             </div>
           </div>
