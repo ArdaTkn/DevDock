@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DevDock IoT Sentinel | Physical DevEx & Git Telemetry Station</title>
-  <meta name="description" content="IoT & Cloud Computing Project Proposal: Bridging local software development state with physical edge hardware via Cloud MQTT and Raspberry Pi." />
+  <meta name="description" content="IoT & Cloud Computing Project: Bridging local software development state with physical edge hardware via Cloud MQTT, USB Serial, Arduino, and Raspberry Pi." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -163,6 +163,7 @@
       display: flex;
       justify-content: center;
       gap: 14px;
+      flex-wrap: wrap;
     }
 
     .btn {
@@ -443,6 +444,47 @@
       max-height: 220px;
     }
 
+    /* ── Quickstart Steps Grid ────────────── */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .step-number {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--primary-dim);
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    .step-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .step-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
     /* ── Tables & Code ───────────────────── */
     table {
       width: 100%;
@@ -547,14 +589,14 @@
   <nav>
     <a href="#" class="nav-brand">
       <span>⚓ DevDock IoT Sentinel</span>
-      <span class="nav-badge">IoT & Cloud Proposal</span>
+      <span class="nav-badge">IoT & Cloud Specification</span>
     </a>
     <div class="nav-links">
-      <a href="#overview">Overview</a>
-      <a href="#architecture">Architecture</a>
-      <a href="#hardware">Hardware Circuit</a>
-      <a href="#protocols">Software & MQTT</a>
+      <a href="#quickstart">Quickstart (What To Do)</a>
+      <a href="#hardware">Hardware Schematics</a>
+      <a href="#firmware">Firmware & Code</a>
       <a href="#simulator">Live Simulator</a>
+      <a href="#architecture">Architecture</a>
       <a href="#roadmap">Roadmap</a>
       <a href="https://github.com/ArdaTkn/DevDock" target="_blank">GitHub Repo ↗</a>
     </div>
@@ -565,30 +607,72 @@
     <div class="hero-tag">🎓 IoT & Cloud Computing Course Project Specification</div>
     <h1>Physical DevEx & Git Telemetry Station for Edge Computing</h1>
     <p>
-      An end-to-end edge-to-cloud architecture bridging local developer repository health with physical Raspberry Pi actuators via MQTT Pub/Sub telemetry.
+      An end-to-end edge-to-cloud architecture bridging local developer repository health with physical Arduino and Raspberry Pi actuators via USB Serial & Cloud MQTT telemetry.
     </p>
 
     <div class="hero-meta-grid">
       <div class="meta-chip"><b>Course:</b> IoT & Cloud Computing</div>
       <div class="meta-chip"><b>Author:</b> Arda Tekin</div>
-      <div class="meta-chip"><b>Edge Hardware:</b> Raspberry Pi (GPIO / Linux)</div>
-      <div class="meta-chip"><b>Protocols:</b> MQTT (HiveMQ Cloud / QoS 0/1)</div>
+      <div class="meta-chip"><b>Hardware Options:</b> Arduino Uno / Nano & Raspberry Pi</div>
+      <div class="meta-chip"><b>Protocols:</b> USB Serial (9600 Baud) & MQTT Pub/Sub</div>
       <div class="meta-chip"><b>Core App:</b> DevDock (Tauri 2 + Rust Core)</div>
     </div>
 
     <div class="btn-group">
-      <a href="#simulator" class="btn btn-primary">⚡ Test Live Circuit Simulator</a>
-      <a href="#hardware" class="btn btn-secondary">🔌 View Hardware Schematic</a>
-      <a href="#architecture" class="btn btn-secondary">📐 System Architecture</a>
+      <a href="#quickstart" class="btn btn-primary">🚀 4-Step Quickstart Guide</a>
+      <a href="#simulator" class="btn btn-secondary">⚡ Test Live Simulator</a>
+      <a href="https://wokwi.com/projects/new/arduino-uno" target="_blank" class="btn btn-secondary">🌐 Open Wokwi Simulator ↗</a>
     </div>
   </header>
 
   <div class="container">
 
+    <!-- 0. Exact Step-by-Step Quickstart (WHAT TO DO) -->
+    <section id="quickstart" class="section">
+      <div class="section-header">
+        <h2 class="section-title">🚀 1. Step-by-Step Implementation Guide: What To Do</h2>
+        <p class="section-desc">Follow these 4 simple steps to set up the physical hardware and connect it to DevDock.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <span class="step-number">STEP 1</span>
+          <div class="step-title">🔌 Wire the Circuit</div>
+          <div class="step-desc">
+            Place 3 LEDs (Green, Yellow, Red) on a breadboard. Connect a 220Ω resistor to each Anode (+), and wire common ground (-) to Arduino/Pi GND.
+          </div>
+        </div>
+
+        <div class="step-card">
+          <span class="step-number">STEP 2</span>
+          <div class="step-title">📥 Upload Firmware</div>
+          <div class="step-desc">
+            Connect Arduino to computer via USB. Open <code>hardware/arduino/DevDock_Hardware_Station.ino</code> in Arduino IDE and click <b>Upload (➔)</b>.
+          </div>
+        </div>
+
+        <div class="step-card">
+          <span class="step-number">STEP 3</span>
+          <div class="step-title">⚙️ Configure DevDock</div>
+          <div class="step-desc">
+            Launch DevDock, navigate to <b>Settings ➔ 📡 Hardware & IoT Station</b>, and select the detected USB Serial Port (e.g. <code>/dev/tty.usbmodem...</code> or <code>COM3</code>).
+          </div>
+        </div>
+
+        <div class="step-card">
+          <span class="step-number">STEP 4</span>
+          <div class="step-title">✨ Test & Code</div>
+          <div class="step-desc">
+            Click the test buttons (<code>🟢 Test Clean</code>, <code>🟡 Test Dirty</code>) or simply code! The physical LEDs update automatically upon every Git state change.
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- 1. Executive Summary & Problem Statement -->
     <section id="overview" class="section">
       <div class="section-header">
-        <h2 class="section-title">📌 1. Project Motivation & Problem Statement</h2>
+        <h2 class="section-title">📌 2. Project Motivation & Problem Statement</h2>
         <p class="section-desc">Why physical edge hardware solves a real-world developer experience (DevEx) bottleneck.</p>
       </div>
 
@@ -608,11 +692,11 @@
         <div class="card">
           <h3>✅ The IoT & Cloud Solution</h3>
           <p>
-            <b>DevDock IoT Sentinel</b> transforms the developer's physical workspace by deploying an ambient Edge Hardware Station on a Raspberry Pi:
+            <b>DevDock IoT Sentinel</b> transforms the developer's physical workspace by deploying an ambient Edge Hardware Station on an Arduino or Raspberry Pi:
           </p>
           <ul style="padding-left: 20px; font-size: 13.5px; color: var(--text-muted); line-height: 1.6;">
             <li><b>Zero Screen Distraction:</b> Real-time peripheral LED status indicator for repository hygiene.</li>
-            <li><b>Edge-to-Cloud Telemetry:</b> Sub-second MQTT pub/sub synchronizes local state with remote edge hardware.</li>
+            <li><b>Direct USB Serial & Cloud MQTT:</b> Dual-mode support for zero-latency local sync or remote cloud telemetry.</li>
             <li><b>Physical Hardware Interactivity:</b> Instant visual triage without navigating terminal dashboards.</li>
           </ul>
         </div>
@@ -622,7 +706,7 @@
     <!-- 2. End-to-End System Architecture -->
     <section id="architecture" class="section">
       <div class="section-header">
-        <h2 class="section-title">📐 2. System Architecture & Telemetry Pipeline</h2>
+        <h2 class="section-title">📐 3. System Architecture & Telemetry Pipeline</h2>
         <p class="section-desc">Distributed 4-tier edge-to-cloud computing pipeline.</p>
       </div>
 
@@ -641,147 +725,135 @@
           </div>
 
           <div class="flow-node highlight">
-            <div class="flow-node-title">3. Cloud Broker</div>
-            <div class="flow-node-sub">MQTT (HiveMQ / Port 1883/8883)</div>
-            <div style="font-size: 11px; margin-top: 8px; color: #c4b5fd;">Topic: <code>devdock/{id}/status</code></div>
+            <div class="flow-node-title">3. Protocol Layer</div>
+            <div class="flow-node-sub">USB Serial / Cloud MQTT</div>
+            <div style="font-size: 11px; margin-top: 8px; color: #c4b5fd;">9600 Baud / HiveMQ Broker</div>
           </div>
 
           <div class="flow-node highlight">
             <div class="flow-node-title">4. Edge Actuator</div>
-            <div class="flow-node-sub">Raspberry Pi (Python Daemon)</div>
-            <div style="font-size: 11px; margin-top: 8px; color: #10b981;">Drives GPIO 17, 27, 22 LEDs</div>
+            <div class="flow-node-sub">Arduino Uno / Raspberry Pi</div>
+            <div style="font-size: 11px; margin-top: 8px; color: #10b981;">Drives Physical Status LEDs</div>
           </div>
         </div>
 
         <p style="font-size: 13px; color: var(--text-muted); margin-top: 10px; line-height: 1.5;">
-          <b>Data Lifecycle:</b> When DevDock audits repositories on macOS/Windows, it evaluates dirty git branches, active ports, and cache bloat. It transmits a lightweight telemetry payload via MQTT over TLS. The Raspberry Pi Edge Daemon subscribes to the telemetry feed, processes state transitions, and toggles physical GPIO circuits.
+          <b>Data Lifecycle:</b> When DevDock audits repositories on macOS/Windows, it evaluates dirty git branches, active ports, and cache bloat. It transmits telemetry signals directly via native USB Serial (or MQTT over TLS). The connected micro-controller parses commands in real-time and updates the physical LED traffic light.
         </p>
       </div>
     </section>
 
-    <!-- 3. Hardware Circuit Engineering & Safety Calculations -->
+    <!-- 3. Hardware Circuit Engineering & Pinout -->
     <section id="hardware" class="section">
       <div class="section-header">
-        <h2 class="section-title">🔌 3. Hardware Engineering & Circuit Schematics</h2>
-        <p class="section-desc">Electrical calculations, Bill of Materials (BOM), and GPIO pin configuration.</p>
+        <h2 class="section-title">🔌 4. Hardware Engineering & Circuit Pinouts</h2>
+        <p class="section-desc">Electrical calculations, Bill of Materials (BOM), and pinout tables for both Arduino and Raspberry Pi.</p>
       </div>
 
       <div class="grid-2">
+        <!-- Arduino Pinout Table -->
         <div class="card">
-          <h3>⚡ Electrical Safety & Current Limiting</h3>
-          <p>
-            Raspberry Pi GPIO outputs operate at <b>3.3V DC logic level</b> with a maximum safe current draw of <b>16mA per pin</b>.
-          </p>
-          <p>
-            Applying Ohm's Law ($V = I \times R$) for standard 5mm LEDs (Forward voltage $V_F \approx 2.0V$):
-          </p>
-          <pre><code>V_resistor = V_supply - V_LED = 3.3V - 2.0V = 1.3V
-I_LED = V_resistor / R = 1.3V / 220Ω ≈ 5.9 mA</code></pre>
-          <p style="margin-top: 8px; font-size: 12.5px; color: var(--green);">
-            ✅ <b>Safe & Optimal:</b> 5.9 mA provides bright visibility while drawing less than 38% of the maximum GPIO pin threshold.
-          </p>
-        </div>
-
-        <div class="card">
-          <h3>📋 Bill of Materials (BOM)</h3>
+          <h3>⚡ Option A: Arduino Uno / Nano (USB Serial)</h3>
           <table>
             <thead>
               <tr>
-                <th>Component</th>
-                <th>Qty</th>
-                <th>Specification</th>
+                <th>Indicator</th>
+                <th>Arduino Pin</th>
+                <th>Circuit Path</th>
+                <th>State Trigger</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>Raspberry Pi</td>
-                <td>1</td>
-                <td>Model 3B+, 4B, 5 or Zero 2W (Linux OS)</td>
+                <td>🟢 <b>Green LED</b></td>
+                <td><code>Digital Pin 2</code></td>
+                <td>Pin 2 ➔ 220Ω ➔ Anode (+)</td>
+                <td>All repos clean & synced.</td>
               </tr>
               <tr>
-                <td>5mm Diffused LEDs</td>
-                <td>3</td>
-                <td>1x Green, 1x Yellow, 1x Red</td>
+                <td>🟡 <b>Yellow LED</b></td>
+                <td><code>Digital Pin 3</code></td>
+                <td>Pin 3 ➔ 220Ω ➔ Anode (+)</td>
+                <td>Uncommitted Git changes.</td>
               </tr>
               <tr>
-                <td>Current Resistors</td>
-                <td>3</td>
-                <td>220Ω (or 330Ω), 1/4W Through-Hole</td>
+                <td>🔴 <b>Red LED</b></td>
+                <td><code>Digital Pin 4</code></td>
+                <td>Pin 4 ➔ 220Ω ➔ Anode (+)</td>
+                <td>Missing <code>.env</code> or broken deps.</td>
               </tr>
               <tr>
-                <td>Solderless Breadboard</td>
-                <td>1</td>
-                <td>400-Point Half-Size Breadboard</td>
+                <td>⏚ <b>Common Ground</b></td>
+                <td><code>GND</code></td>
+                <td>Common cathode rail</td>
+                <td>System ground reference.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Raspberry Pi Pinout Table -->
+        <div class="card">
+          <h3>🍓 Option B: Raspberry Pi (Cloud MQTT)</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Indicator</th>
+                <th>BCM GPIO</th>
+                <th>Physical Pin</th>
+                <th>Circuit Path</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>🟢 <b>Green LED</b></td>
+                <td><code>GPIO 17</code></td>
+                <td>Pin 11</td>
+                <td>Pin 11 ➔ 220Ω ➔ Anode (+)</td>
               </tr>
               <tr>
-                <td>Jumper Wires</td>
-                <td>5</td>
-                <td>Female-to-Male (F-M) Premium Jumpers</td>
+                <td>🟡 <b>Yellow LED</b></td>
+                <td><code>GPIO 27</code></td>
+                <td>Pin 13</td>
+                <td>Pin 13 ➔ 220Ω ➔ Anode (+)</td>
+              </tr>
+              <tr>
+                <td>🔴 <b>Red LED</b></td>
+                <td><code>GPIO 22</code></td>
+                <td>Pin 15</td>
+                <td>Pin 15 ➔ 220Ω ➔ Anode (+)</td>
+              </tr>
+              <tr>
+                <td>⏚ <b>Common Ground</b></td>
+                <td><code>GND</code></td>
+                <td>Pin 6 / 9</td>
+                <td>Common cathode rail</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- GPIO Pinout Table -->
+      <!-- Electrical Calculations -->
       <div class="card" style="margin-top: 20px;">
-        <h3>📌 GPIO Pin Mapping & State Logic Table</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Indicator</th>
-              <th>BCM GPIO</th>
-              <th>Physical Pin</th>
-              <th>Circuit Path</th>
-              <th>System Condition Trigger</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>🟢 <b>Green LED</b></td>
-              <td><code>GPIO 17</code></td>
-              <td>Pin 11</td>
-              <td>Pin 11 ➔ 220Ω ➔ Anode (+) | Cathode (-) ➔ GND</td>
-              <td>All repositories clean, dev servers active, health &gt;= 90%.</td>
-            </tr>
-            <tr>
-              <td>🟡 <b>Yellow LED</b></td>
-              <td><code>GPIO 27</code></td>
-              <td>Pin 13</td>
-              <td>Pin 13 ➔ 220Ω ➔ Anode (+) | Cathode (-) ➔ GND</td>
-              <td>Uncommitted git changes found or &gt;500MB reclaimable build cache.</td>
-            </tr>
-            <tr>
-              <td>🔴 <b>Red LED</b></td>
-              <td><code>GPIO 22</code></td>
-              <td>Pin 15</td>
-              <td>Pin 15 ➔ 220Ω ➔ Anode (+) | Cathode (-) ➔ GND</td>
-              <td>Missing <code>.env</code> secrets, broken dependencies, or port conflict.</td>
-            </tr>
-            <tr>
-              <td>✨ <b>Blinking Yellow</b></td>
-              <td><code>GPIO 27</code></td>
-              <td>Pin 13</td>
-              <td>2 Hz Flashing Cycle</td>
-              <td>Bulk Git Pull or Disk Janitor cache cleanup in progress.</td>
-            </tr>
-            <tr>
-              <td>⏚ <b>Common Ground</b></td>
-              <td><code>GND</code></td>
-              <td>Pin 6 / Pin 9</td>
-              <td>Common cathode ground rail</td>
-              <td>System reference ground.</td>
-            </tr>
-          </tbody>
-        </table>
+        <h3>⚡ Electrical Safety & Current Limiting Calculation</h3>
+        <p>
+          Applying Ohm's Law ($V = I \times R$) for standard 5mm LEDs (Forward voltage $V_F \approx 2.0V$):
+        </p>
+        <pre><code>V_resistor = V_supply - V_LED = (5.0V for Arduino / 3.3V for Pi) - 2.0V
+I_LED (Arduino) = (5.0V - 2.0V) / 220Ω = 3.0V / 220Ω ≈ 13.6 mA  (Safe limit: 20mA per pin)
+I_LED (Raspberry Pi) = (3.3V - 2.0V) / 220Ω = 1.3V / 220Ω ≈ 5.9 mA  (Safe limit: 16mA per pin)</code></pre>
+        <p style="margin-top: 8px; font-size: 12.5px; color: var(--green);">
+          ✅ <b>100% Safe & Standard:</b> 220Ω resistors protect both micro-controllers while ensuring high LED brightness.
+        </p>
       </div>
     </section>
 
     <!-- 4. Interactive Live Simulator -->
     <section id="simulator" class="section">
       <div class="section-header">
-        <h2 class="section-title">⚡ 4. Interactive Live Circuit & Telemetry Simulator</h2>
-        <p class="section-desc">Test real-time state transitions and inspect active MQTT telemetry payloads.</p>
+        <h2 class="section-title">⚡ 5. Interactive Live Circuit & Telemetry Simulator</h2>
+        <p class="section-desc">Test real-time state transitions and inspect active MQTT/Serial telemetry payloads.</p>
       </div>
 
       <div class="sim-box">
@@ -790,15 +862,15 @@ I_LED = V_resistor / R = 1.3V / 220Ω ≈ 5.9 mA</code></pre>
           <div class="breadboard">
             <div class="led-wrapper">
               <div id="led-green" class="led-bulb green active"></div>
-              <span class="led-label">GPIO 17<br>CLEAN</span>
+              <span class="led-label">PIN 2<br>CLEAN</span>
             </div>
             <div class="led-wrapper">
               <div id="led-yellow" class="led-bulb yellow"></div>
-              <span class="led-label">GPIO 27<br>WARN</span>
+              <span class="led-label">PIN 3<br>WARN</span>
             </div>
             <div class="led-wrapper">
               <div id="led-red" class="led-bulb red"></div>
-              <span class="led-label">GPIO 22<br>ERR</span>
+              <span class="led-label">PIN 4<br>ERR</span>
             </div>
           </div>
           <div id="sim-status-text" style="font-size: 13.5px; font-weight: 600; color: var(--green);">
@@ -810,163 +882,133 @@ I_LED = V_resistor / R = 1.3V / 220Ω ≈ 5.9 mA</code></pre>
         <div class="sim-controls">
           <button class="sim-btn active" onclick="setSimState('clean')">
             <span>🟢 State 1: All Repos Clean (Normal)</span>
-            <span class="nav-badge">Green ON</span>
+            <span class="nav-badge">Green ON ('C')</span>
           </button>
           <button class="sim-btn" onclick="setSimState('dirty')">
             <span>🟡 State 2: Uncommitted Git Changes</span>
-            <span class="nav-badge" style="color: #f59e0b; border-color: #f59e0b;">Yellow ON</span>
+            <span class="nav-badge" style="color: #f59e0b; border-color: #f59e0b;">Yellow ON ('D')</span>
           </button>
           <button class="sim-btn" onclick="setSimState('error')">
             <span>🔴 State 3: Missing Secrets / Broken Deps</span>
-            <span class="nav-badge" style="color: #ef4444; border-color: #ef4444;">Red ON</span>
+            <span class="nav-badge" style="color: #ef4444; border-color: #ef4444;">Red ON ('E')</span>
           </button>
           <button class="sim-btn" onclick="setSimState('sync')">
             <span>✨ State 4: Async Sync / Bulk Pulling</span>
-            <span class="nav-badge" style="color: #c4b5fd; border-color: #c4b5fd;">Blinking</span>
+            <span class="nav-badge" style="color: #c4b5fd; border-color: #c4b5fd;">Blinking ('S')</span>
           </button>
 
           <div style="margin-top: 6px;">
-            <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Active Cloud MQTT Payload (JSON):</span>
+            <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Active Telemetry Payload:</span>
             <pre class="payload-viewer" id="sim-payload"></pre>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 5. Software Protocols & Python Daemon -->
-    <section id="protocols" class="section">
+    <!-- 5. Firmware & Code Implementations -->
+    <section id="firmware" class="section">
       <div class="section-header">
-        <h2 class="section-title">💻 5. Software Implementation & Edge Daemon</h2>
-        <p class="section-desc">Production-ready edge agent with auto-reconnection and robust exception handling.</p>
+        <h2 class="section-title">💻 6. Production Firmware & Edge Code</h2>
+        <p class="section-desc">Ready-to-use scripts included directly in the DevDock repository.</p>
       </div>
 
-      <div class="card">
-        <h3>🐍 Raspberry Pi Edge Daemon (<code>pi_sentinel.py</code>)</h3>
-        <p>
-          Runs as a background systemd service on Linux, subscribing to the encrypted Cloud MQTT topic:
-        </p>
-        <pre><code># /opt/devdock/pi_sentinel.py
-import json
-import time
-import paho.mqtt.client as mqtt
+      <div class="grid-2">
+        <div class="card">
+          <h3>⚡ Arduino Firmware (<code>DevDock_Hardware_Station.ino</code>)</h3>
+          <p>Listens on USB Serial at 9600 Baud for 1-byte command characters:</p>
+          <pre><code>// hardware/arduino/DevDock_Hardware_Station.ino
+const int GREEN_LED = 2, YELLOW_LED = 3, RED_LED = 4;
+
+void setup() {
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(YELLOW_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
+  Serial.begin(9600);
+  digitalWrite(GREEN_LED, HIGH); // Default clean
+}
+
+void loop() {
+  if (Serial.available() > 0) {
+    char cmd = Serial.read();
+    digitalWrite(GREEN_LED, cmd == 'C');
+    digitalWrite(YELLOW_LED, cmd == 'D');
+    digitalWrite(RED_LED, cmd == 'E');
+  }
+}</code></pre>
+        </div>
+
+        <div class="card">
+          <h3>🍓 Raspberry Pi Edge Daemon (<code>pi_sentinel.py</code>)</h3>
+          <p>Subscribes to Cloud MQTT telemetry stream over WiFi/Ethernet:</p>
+          <pre><code># hardware/raspberry_pi/pi_sentinel.py
+import json, paho.mqtt.client as mqtt
 from gpiozero import LED
 
-# 1. GPIO Pin Definitions (BCM)
-green_led  = LED(17)
-yellow_led = LED(27)
-red_led    = LED(22)
+green, yellow, red = LED(17), LED(27), LED(22)
 
-def reset_leds():
-    green_led.off()
-    yellow_led.off()
-    red_led.off()
-
-# 2. MQTT Callback upon message delivery
 def on_message(client, userdata, msg):
-    try:
-        payload = json.loads(msg.payload.decode('utf-8'))
-        status = payload.get("status", "clean")
-        
-        reset_leds()
-        if status == "clean":
-            green_led.on()
-        elif status == "dirty":
-            yellow_led.on()
-        elif status == "error":
-            red_led.on()
-        elif status == "sync":
-            yellow_led.blink(on_time=0.2, off_time=0.2, n=5)
-            green_led.on()
-    except Exception as e:
-        print(f"[Edge Daemon Error] {e}")
-        red_led.blink(on_time=0.1, off_time=0.1, n=3)
+    data = json.loads(msg.payload.decode())
+    status = data.get("status", "clean")
+    green.off(); yellow.off(); red.off()
+    if status == "clean": green.on()
+    elif status == "dirty": yellow.on()
+    elif status == "error": red.on()
 
-# 3. Connection & Event Loop with Auto-Reconnect
-client = mqtt.Client(client_id="rpi-devdock-sentinel-01")
-client.connect("broker.hivemq.com", 1883, keepalive=60)
-client.subscribe("devdock/telemetry/status", qos=1)
+client = mqtt.Client()
+client.connect("broker.hivemq.com", 1883)
+client.subscribe("devdock/telemetry/status")
 client.on_message = on_message
-
-print("🚀 DevDock Edge Sentinel Daemon active. Listening for telemetry...")
 client.loop_forever()</code></pre>
+        </div>
       </div>
     </section>
 
     <!-- 6. Implementation Roadmap -->
     <section id="roadmap" class="section">
       <div class="section-header">
-        <h2 class="section-title">🗺️ 6. End-to-End Implementation Roadmap</h2>
-        <p class="section-desc">Structured 5-phase execution plan from prototyping to evaluation.</p>
+        <h2 class="section-title">🗺️ 7. End-to-End Implementation Roadmap</h2>
+        <p class="section-desc">Structured 5-phase execution plan from prototyping to final evaluation.</p>
       </div>
 
       <div class="timeline">
         <div class="timeline-item">
           <span class="timeline-badge">PHASE 1</span>
           <div class="timeline-content">
-            <h4>Hardware Breadboard Prototyping & GPIO Test</h4>
-            <p>Assemble 3x LEDs with 220Ω resistors on half-size breadboard. Verify GPIO 17, 27, 22 pin toggling via local Python test harness.</p>
+            <h4>Hardware Breadboard Prototyping & Serial Test</h4>
+            <p>Assemble 3x LEDs with 220Ω resistors on breadboard. Verify Pin 2, 3, 4 toggling via Arduino Serial monitor.</p>
           </div>
         </div>
 
         <div class="timeline-item">
           <span class="timeline-badge">PHASE 2</span>
           <div class="timeline-content">
-            <h4>Cloud MQTT Broker & Pub/Sub Contract</h4>
-            <p>Deploy secure MQTT broker instance (HiveMQ Cloud / Mosquitto). Establish topic hierarchy (<code>devdock/{client}/telemetry</code>) with QoS 1.</p>
+            <h4>DevDock Native Hardware Control Module</h4>
+            <p>Integrated native USB Serial port scanner, hardware signal IPC commands, and Settings UI panel inside DevDock.</p>
           </div>
         </div>
 
         <div class="timeline-item">
           <span class="timeline-badge">PHASE 3</span>
           <div class="timeline-content">
-            <h4>DevDock Desktop Telemetry Module</h4>
-            <p>Integrate MQTT publisher client into DevDock's Tauri/Rust backend. Broadcast repository status on Git change, port open, and cache clean.</p>
+            <h4>Cloud MQTT Pub/Sub Contract</h4>
+            <p>Deploy secure MQTT broker instance on HiveMQ Cloud for remote Raspberry Pi telemetry broadcasting.</p>
           </div>
         </div>
 
         <div class="timeline-item">
           <span class="timeline-badge">PHASE 4</span>
           <div class="timeline-content">
-            <h4>Edge Daemon Hardening & Linux Systemd Service</h4>
-            <p>Package Python edge daemon as an auto-starting Linux <code>systemd</code> service on Raspberry Pi with automatic WiFi reconnection.</p>
+            <h4>Automatic State Synchronization</h4>
+            <p>DevDock file watcher automatically broadcasts hardware signals upon Git commit, file change, or scan completion.</p>
           </div>
         </div>
 
         <div class="timeline-item">
           <span class="timeline-badge">PHASE 5</span>
           <div class="timeline-content">
-            <h4>Live Benchmarking, Presentation & Evaluation</h4>
-            <p>Measure roundtrip latency (&lt;120ms target). Conduct live hardware demonstration and submit academic project report.</p>
+            <h4>Live Benchmarking & Academic Presentation</h4>
+            <p>Measure roundtrip latency (&lt;15ms over USB Serial, &lt;120ms over Cloud MQTT) and present live demonstration.</p>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 7. Evaluation & Course Rubric Alignment -->
-    <section id="evaluation" class="section">
-      <div class="section-header">
-        <h2 class="section-title">🎯 7. Academic Evaluation & Course Alignment</h2>
-        <p class="section-desc">How this project comprehensively fulfills IoT & Cloud Computing grading criteria.</p>
-      </div>
-
-      <div class="grid-3">
-        <div class="card">
-          <h3>📡 IoT & Edge Computing</h3>
-          <p>
-            Raspberry Pi operates as an autonomous edge actuator, handling local GPIO voltage regulation, current protection, and edge state persistence.
-          </p>
-        </div>
-        <div class="card">
-          <h3>☁️ Cloud Messaging</h3>
-          <p>
-            Implements distributed MQTT Pub/Sub architecture over Cloud Broker with decoupling between producer (DevDock) and consumer (Pi).
-          </p>
-        </div>
-        <div class="card">
-          <h3>🛡️ Reliability & Fault Tolerance</h3>
-          <p>
-            Features auto-reconnecting MQTT sockets, QoS 1 delivery guarantee, and failover LED patterns during network disruptions.
-          </p>
         </div>
       </div>
     </section>
@@ -975,9 +1017,9 @@ client.loop_forever()</code></pre>
 
   <!-- Footer -->
   <footer>
-    <div style="max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: gap: 14px;">
+    <div style="max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
       <div>
-        <b>DevDock IoT Sentinel</b> — Academic Project Proposal for IoT & Cloud Computing.
+        <b>DevDock IoT Sentinel</b> — Academic Project Specification for IoT & Cloud Computing.
       </div>
       <div>
         Released under MIT License © <a href="https://github.com/ArdaTkn" target="_blank" style="color: var(--primary); text-decoration: none;">Arda Tekin</a>
@@ -989,41 +1031,45 @@ client.loop_forever()</code></pre>
   <script>
     const payloads = {
       clean: {
-        timestamp: "2026-09-21T13:08:00Z",
+        timestamp: "2026-09-21T13:25:00Z",
         client_id: "devdock-ardatekin-macbook",
         status: "clean",
+        hardware_signal: "C",
         total_projects: 14,
         dirty_repos: 0,
         active_ports: [3000, 5173],
         reclaimable_cache_bytes: 0,
-        gpio_state: { pin_17: "HIGH", pin_27: "LOW", pin_22: "LOW" }
+        gpio_state: { pin_2: "HIGH", pin_3: "LOW", pin_4: "LOW" }
       },
       dirty: {
-        timestamp: "2026-09-21T13:08:02Z",
+        timestamp: "2026-09-21T13:25:02Z",
         client_id: "devdock-ardatekin-macbook",
         status: "dirty",
+        hardware_signal: "D",
         total_projects: 14,
         dirty_repos: 3,
         uncommitted_files: ["src/App.tsx", "src-tauri/src/lib.rs"],
         active_ports: [3000],
-        gpio_state: { pin_17: "LOW", pin_27: "HIGH", pin_22: "LOW" }
+        gpio_state: { pin_2: "LOW", pin_3: "HIGH", pin_4: "LOW" }
       },
       error: {
-        timestamp: "2026-09-21T13:08:05Z",
+        timestamp: "2026-09-21T13:25:05Z",
         client_id: "devdock-ardatekin-macbook",
         status: "error",
+        hardware_signal: "E",
         error_type: "MISSING_ENV_SECRETS",
         affected_project: "merdiven_son",
         missing_keys: ["API_SECRET_KEY", "DB_PASSWORD"],
-        gpio_state: { pin_17: "LOW", pin_27: "LOW", pin_22: "HIGH" }
+        gpio_state: { pin_2: "LOW", pin_3: "LOW", pin_4: "HIGH" }
       },
       sync: {
-        timestamp: "2026-09-21T13:08:07Z",
+        timestamp: "2026-09-21T13:25:07Z",
         client_id: "devdock-ardatekin-macbook",
         status: "sync",
+        hardware_signal: "S",
         action: "BULK_GIT_PULL",
         target_repos: 14,
-        gpio_state: { pin_17: "BLINK", pin_27: "BLINK", pin_22: "LOW" }
+        gpio_state: { pin_2: "BLINK", pin_3: "BLINK", pin_4: "LOW" }
       }
     };
 
@@ -1049,18 +1095,18 @@ client.loop_forever()</code></pre>
 
       if (state === "clean") {
         green.classList.add("active");
-        statusText.textContent = "🟢 All 14 Repositories Clean & Synchronized";
+        statusText.textContent = "🟢 All 14 Repositories Clean & Synchronized ('C')";
         statusText.style.color = "var(--green)";
       } else if (state === "dirty") {
         yellow.classList.add("active");
-        statusText.textContent = "🟡 3 Repositories with Uncommitted Changes";
+        statusText.textContent = "🟡 3 Repositories with Uncommitted Changes ('D')";
         statusText.style.color = "var(--yellow)";
       } else if (state === "error") {
         red.classList.add("active");
-        statusText.textContent = "🔴 Missing .env Secrets or Broken Dependencies Detected";
+        statusText.textContent = "🔴 Missing .env Secrets or Broken Dependencies Detected ('E')";
         statusText.style.color = "var(--red)";
       } else if (state === "sync") {
-        statusText.textContent = "✨ Synchronizing Repositories via Cloud MQTT...";
+        statusText.textContent = "✨ Synchronizing Repositories ('S')...";
         statusText.style.color = "#c4b5fd";
         let on = false;
         blinkInterval = setInterval(() => {
