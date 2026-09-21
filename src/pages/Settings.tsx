@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { api } from "../services/api";
 import { useProjectsStore } from "../stores/projectsStore";
 import { useSystemStore } from "../stores/systemStore";
 import { useThemeStore, THEME_OPTIONS } from "../stores/themeStore";
@@ -30,6 +31,13 @@ export function Settings() {
   const [dir, setDir] = useState("");
   const [adding, setAdding] = useState(false);
   const [deleteConfirmWs, setDeleteConfirmWs] = useState<import("../types").WorkspaceDto | null>(null);
+  
+  // Hardware Station State
+  const [hardwarePorts, setHardwarePorts] = useState<string[]>([]);
+  const [selectedPort, setSelectedPort] = useState<string>("");
+  const [telemetry, setTelemetry] = useState<import("../types").HardwareTelemetryDto | null>(null);
+  const [signalLog, setSignalLog] = useState<string | null>(null);
+  const [sendingSignal, setSendingSignal] = useState(false);
 
   useEffect(() => {
     void load();
@@ -38,8 +46,35 @@ export function Settings() {
     void loadEditorPref();
     void loadTerminals();
     void loadTerminalPref();
+    void loadHardware();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const loadHardware = async () => {
+    try {
+      const ports = await api.listHardwarePorts();
+      setHardwarePorts(ports);
+      if (ports.length > 0 && !selectedPort) {
+        setSelectedPort(ports[0]);
+      }
+      const tel = await api.getHardwareTelemetry();
+      setTelemetry(tel);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleSendSignal = async (sig: string) => {
+    setSendingSignal(true);
+    try {
+      const res = await api.sendHardwareSignal(selectedPort || null, sig);
+      setSignalLog(res.message);
+    } catch (e) {
+      setSignalLog(`Failed to transmit signal: ${String(e)}`);
+    } finally {
+      setSendingSignal(false);
+    }
+  };
 
   const add = async () => {
     if (!dir.trim()) return;
@@ -220,6 +255,123 @@ export function Settings() {
           <dt>Command Palette</dt>
           <dd>Global search and quick actions via <code>⌘K</code> / <code>Ctrl+K</code></dd>
         </dl>
+      </section>
+
+      {/* Hardware & IoT Station Panel */}
+      <section className="panel">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h2>📡 Hardware & IoT Station (Arduino / Raspberry Pi)</h2>
+          <button className="btn" style={{ fontSize: "11px", padding: "3px 8px" }} onClick={() => void loadHardware()}>
+            🔄 Refresh Ports
+          </button>
+        </div>
+        <p className="muted">
+          Synchronize your real-time repository health with physical Arduino or Raspberry Pi LEDs (Green/Yellow/Red traffic station).
+        </p>
+
+        <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div>
+            <label style={{ fontSize: "12px", color: "var(--muted)", display: "block", marginBottom: "4px" }}>
+              Hardware USB Serial Port:
+            </label>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <select
+                className="select"
+                style={{ flex: 1 }}
+                value={selectedPort}
+                onChange={(e) => setSelectedPort(e.target.value)}
+              >
+                <option value="">Virtual Hardware Simulator (No device plugged in)</option>
+                {hardwarePorts.map((p) => (
+                  <option key={p} value={p}>
+                    🔌 {p} (Physical USB Device)
+                  </option>
+                ))}
+              </select>
+            </div>
+            {hardwarePorts.length === 0 && (
+              <p className="muted small" style={{ marginTop: "4px" }}>
+                No physical serial devices plugged in. Virtual simulator mode active. Plug Arduino via USB and hit Refresh Ports!
+              </p>
+            )}
+          </div>
+
+          {telemetry && (
+            <div style={{ background: "var(--bg-raise)", padding: "12px", borderRadius: "8px", border: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <span style={{ fontSize: "12px", fontWeight: "bold" }}>Current DevDock Telemetry:</span>
+                <span style={{
+                  fontSize: "11px",
+                  fontWeight: "bold",
+                  padding: "2px 8px",
+                  borderRadius: "999px",
+                  background: telemetry.status === "C" ? "rgba(16, 185, 129, 0.2)" : "rgba(245, 158, 11, 0.2)",
+                  color: telemetry.status === "C" ? "#10b981" : "#f59e0b",
+                  border: `1px solid ${telemetry.status === "C" ? "#10b981" : "#f59e0b"}`
+                }}>
+                  {telemetry.status === "C" ? "🟢 STATUS: CLEAN (Green LED)" : "🟡 STATUS: DIRTY (Yellow LED)"}
+                </span>
+              </div>
+              <p className="muted small" style={{ margin: 0 }}>
+                {telemetry.status_text} • {telemetry.dirty_projects_count} uncommitted repos • {telemetry.active_ports_count} active listening ports
+              </p>
+            </div>
+          )}
+
+          <div>
+            <label style={{ fontSize: "12px", color: "var(--muted)", display: "block", marginBottom: "6px" }}>
+              Test Hardware LED Signals:
+            </label>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              <button
+                className="btn"
+                disabled={sendingSignal}
+                onClick={() => void handleSendSignal("C")}
+                title="Send 'C' to turn on Green LED (Clean)"
+              >
+                🟢 Test Clean ('C')
+              </button>
+              <button
+                className="btn"
+                disabled={sendingSignal}
+                onClick={() => void handleSendSignal("D")}
+                title="Send 'D' to turn on Yellow LED (Dirty)"
+              >
+                🟡 Test Dirty ('D')
+              </button>
+              <button
+                className="btn"
+                disabled={sendingSignal}
+                onClick={() => void handleSendSignal("E")}
+                title="Send 'E' to turn on Red LED (Error)"
+              >
+                🔴 Test Error ('E')
+              </button>
+              <button
+                className="btn"
+                disabled={sendingSignal}
+                onClick={() => void handleSendSignal("S")}
+                title="Send 'S' to blink LEDs (Syncing)"
+              >
+                ✨ Test Sync Blink ('S')
+              </button>
+            </div>
+          </div>
+
+          {signalLog && (
+            <div style={{
+              background: "rgba(0, 242, 254, 0.08)",
+              border: "1px solid rgba(0, 242, 254, 0.3)",
+              padding: "8px 12px",
+              borderRadius: "6px",
+              fontSize: "12px",
+              color: "#38bdf8",
+              fontFamily: "monospace"
+            }}>
+              📡 {signalLog}
+            </div>
+          )}
+        </div>
       </section>
 
       <section className="panel">

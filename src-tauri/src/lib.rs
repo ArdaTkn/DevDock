@@ -6,6 +6,7 @@ pub mod error;
 pub mod fs;
 pub mod git;
 pub mod graph;
+pub mod hardware;
 pub mod health;
 pub mod models;
 pub mod processes;
@@ -131,6 +132,9 @@ pub fn run() {
             commands::get_disk_hogs_report,
             commands::get_architecture_graph,
             commands::get_local_ai_summary,
+            commands::list_hardware_ports,
+            commands::send_hardware_signal,
+            commands::get_hardware_telemetry,
         ])
         .run(tauri::generate_context!())
         .expect("error while running DevDock");

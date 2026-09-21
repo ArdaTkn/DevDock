@@ -179,6 +179,15 @@ export const api = {
 
   getLocalAiSummary: (path: string) =>
     invoke<import("../types").LocalAiSummaryDto>("get_local_ai_summary", { path }),
+
+  listHardwarePorts: () =>
+    invoke<string[]>("list_hardware_ports"),
+
+  sendHardwareSignal: (port: string | null, signal: string) =>
+    invoke<import("../types").HardwareSignalResult>("send_hardware_signal", { port, signal }),
+
+  getHardwareTelemetry: () =>
+    invoke<import("../types").HardwareTelemetryDto>("get_hardware_telemetry"),
 };
 
 /** Turns a Rust ErrorDto into a readable string for inline UI display. */

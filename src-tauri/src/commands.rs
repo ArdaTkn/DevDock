@@ -610,6 +610,30 @@ pub fn get_local_ai_summary(
     ))
 }
 
+// ── Hardware / IoT Station ────────────────────────────────────────
+
+#[tauri::command]
+pub fn list_hardware_ports() -> Result<Vec<String>, ErrorDto> {
+    Ok(crate::hardware::HardwareStation::list_serial_ports())
+}
+
+#[tauri::command]
+pub fn send_hardware_signal(
+    port: Option<String>,
+    signal: String,
+) -> Result<crate::hardware::HardwareSignalResult, ErrorDto> {
+    Ok(crate::hardware::HardwareStation::send_signal(port, &signal))
+}
+
+#[tauri::command]
+pub fn get_hardware_telemetry(
+    app: AppHandle,
+) -> Result<crate::hardware::HardwareTelemetryDto, ErrorDto> {
+    Ok(crate::hardware::HardwareStation::get_telemetry(
+        &state(&app).db,
+    ))
+}
+
 fn find_project_id(db: &AppDb, path: &str) -> crate::error::Result<Option<i64>> {
     let conn = db.conn();
     let mut stmt = conn.prepare("SELECT id FROM projects WHERE path=?1")?;

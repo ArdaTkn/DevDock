@@ -222,3 +222,21 @@ export interface LocalAiSummaryDto {
   maintenance_tips: string[];
   is_ai_generated_offline: boolean;
 }
+
+export interface HardwareTelemetryDto {
+  status: string; // "C", "D", "E", "S"
+  status_text: string;
+  total_projects: number;
+  dirty_projects_count: number;
+  active_ports_count: number;
+  recommended_led: string;
+  detected_ports: string[];
+}
+
+export interface HardwareSignalResult {
+  success: boolean;
+  mode: string;
+  port: string;
+  signal_sent: string;
+  message: string;
+}
