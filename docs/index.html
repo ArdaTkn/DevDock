@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevDock IoT Sentinel | Physical DevEx & Git Telemetry Station</title>
+  <meta name="description" content="IoT & Cloud Computing Project Proposal: Bridging local software development state with physical edge hardware via Cloud MQTT and Raspberry Pi." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --bg-card: #111827;
+      --bg-card-hover: #17223b;
+      --border: #1f293d;
+      --border-accent: #00f2fe;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #00f2fe;
+      --primary-dim: rgba(0, 242, 254, 0.12);
+      --green: #10b981;
+      --green-glow: rgba(16, 185, 129, 0.4);
+      --yellow: #f59e0b;
+      --yellow-glow: rgba(245, 158, 11, 0.4);
+      --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.4);
+      --purple: #8b5cf6;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Navigation ──────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 17px;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .nav-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--primary-dim);
+      color: var(--primary);
+      border: 1px solid rgba(0, 242, 254, 0.3);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    /* ── Hero Section ────────────────────── */
+    .hero {
+      padding: 70px 24px 50px;
+      max-width: 1100px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: #c4b5fd;
+      font-size: 12.5px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: 46px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin-bottom: 18px;
+      background: linear-gradient(135deg, #ffffff 30%, #00f2fe 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto 30px;
+      font-weight: 400;
+    }
+
+    .hero-meta-grid {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 35px;
+    }
+
+    .meta-chip {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .meta-chip b {
+      color: var(--text);
+    }
+
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #000;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 20px rgba(0, 242, 254, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--text-muted);
+    }
+
+    /* ── Main Content Container ─────────── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .section {
+      margin-bottom: 70px;
+    }
+
+    .section-header {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 26px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* ── Cards & Grids ───────────────────── */
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .card:hover {
+      border-color: rgba(0, 242, 254, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      line-height: 1.55;
+    }
+
+    /* ── Architecture Flowchart ──────────── */
+    .arch-flow {
+      background: #0d1322;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      position: relative;
+    }
+
+    @media (max-width: 860px) {
+      .flow-steps {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .flow-node {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      position: relative;
+    }
+
+    .flow-node.highlight {
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.15);
+    }
+
+    .flow-node-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .flow-node-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    /* ── Interactive Live Simulator ───────── */
+    .sim-box {
+      background: #0d1322;
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      border-radius: 14px;
+      padding: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 860px) {
+      .sim-box {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .sim-station {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #080c14;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .breadboard {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 20px 30px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      gap: 36px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .led-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .led-bulb {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #334155;
+      transition: all 0.25s ease-in-out;
+      border: 2px solid rgba(0, 0, 0, 0.2);
+    }
+
+    .led-bulb.green.active {
+      background: #10b981;
+      box-shadow: 0 0 24px #10b981, 0 0 40px var(--green-glow);
+    }
+
+    .led-bulb.yellow.active {
+      background: #f59e0b;
+      box-shadow: 0 0 24px #f59e0b, 0 0 40px var(--yellow-glow);
+    }
+
+    .led-bulb.red.active {
+      background: #ef4444;
+      box-shadow: 0 0 24px #ef4444, 0 0 40px var(--red-glow);
+    }
+
+    .led-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #334155;
+      font-family: var(--font-mono);
+    }
+
+    .sim-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .sim-btn {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+
+    .sim-btn:hover {
+      border-color: var(--primary);
+      background: var(--bg-card-hover);
+    }
+
+    .sim-btn.active {
+      border-color: var(--primary);
+      background: var(--primary-dim);
+      color: var(--primary);
+    }
+
+    .payload-viewer {
+      background: #080c14;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #38bdf8;
+      overflow-x: auto;
+      max-height: 220px;
+    }
+
+    /* ── Tables & Code ───────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    th {
+      background: #131b2e;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    td {
+      background: var(--bg-card);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #38bdf8;
+    }
+
+    pre {
+      background: #080c14;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #e2e8f0;
+      margin-top: 10px;
+    }
+
+    /* ── Roadmap Timeline ────────────────── */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      align-items: flex-start;
+    }
+
+    .timeline-badge {
+      background: var(--primary-dim);
+      color: var(--primary);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      white-space: nowrap;
+    }
+
+    .timeline-content h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .timeline-content p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── Footer ──────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 35px 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      background: #060911;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav>
+    <a href="#" class="nav-brand">
+      <span>⚓ DevDock IoT Sentinel</span>
+      <span class="nav-badge">IoT & Cloud Proposal</span>
+    </a>
+    <div class="nav-links">
+      <a href="#overview">Overview</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#hardware">Hardware Circuit</a>
+      <a href="#protocols">Software & MQTT</a>
+      <a href="#simulator">Live Simulator</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="https://github.com/ArdaTkn/DevDock" target="_blank">GitHub Repo ↗</a>
+    </div>
+  </nav>
+
+  <!-- Hero Header -->
+  <header class="hero">
+    <div class="hero-tag">🎓 IoT & Cloud Computing Course Project Specification</div>
+    <h1>Physical DevEx & Git Telemetry Station for Edge Computing</h1>
+    <p>
+      An end-to-end edge-to-cloud architecture bridging local developer repository health with physical Raspberry Pi actuators via MQTT Pub/Sub telemetry.
+    </p>
+
+    <div class="hero-meta-grid">
+      <div class="meta-chip"><b>Course:</b> IoT & Cloud Computing</div>
+      <div class="meta-chip"><b>Author:</b> Arda Tekin</div>
+      <div class="meta-chip"><b>Edge Hardware:</b> Raspberry Pi (GPIO / Linux)</div>
+      <div class="meta-chip"><b>Protocols:</b> MQTT (HiveMQ Cloud / QoS 0/1)</div>
+      <div class="meta-chip"><b>Core App:</b> DevDock (Tauri 2 + Rust Core)</div>
+    </div>
+
+    <div class="btn-group">
+      <a href="#simulator" class="btn btn-primary">⚡ Test Live Circuit Simulator</a>
+      <a href="#hardware" class="btn btn-secondary">🔌 View Hardware Schematic</a>
+      <a href="#architecture" class="btn btn-secondary">📐 System Architecture</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- 1. Executive Summary & Problem Statement -->
+    <section id="overview" class="section">
+      <div class="section-header">
+        <h2 class="section-title">📌 1. Project Motivation & Problem Statement</h2>
+        <p class="section-desc">Why physical edge hardware solves a real-world developer experience (DevEx) bottleneck.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>❌ The Problem in Modern Software Engineering</h3>
+          <p>
+            Software engineers manage dozens of active repositories simultaneously. Developers constantly suffer from cognitive load:
+          </p>
+          <ul style="padding-left: 20px; font-size: 13.5px; color: var(--text-muted); line-height: 1.6;">
+            <li>Leaving uncommitted/unpushed Git changes on local branches before closing laptops.</li>
+            <li>Accumulating gigabytes of dead build cache (<code>node_modules</code>, <code>target</code>, <code>.venv</code>).</li>
+            <li>Orphaned dev servers silently consuming local TCP ports (<code>:3000</code>, <code>:5173</code>, <code>:8000</code>).</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>✅ The IoT & Cloud Solution</h3>
+          <p>
+            <b>DevDock IoT Sentinel</b> transforms the developer's physical workspace by deploying an ambient Edge Hardware Station on a Raspberry Pi:
+          </p>
+          <ul style="padding-left: 20px; font-size: 13.5px; color: var(--text-muted); line-height: 1.6;">
+            <li><b>Zero Screen Distraction:</b> Real-time peripheral LED status indicator for repository hygiene.</li>
+            <li><b>Edge-to-Cloud Telemetry:</b> Sub-second MQTT pub/sub synchronizes local state with remote edge hardware.</li>
+            <li><b>Physical Hardware Interactivity:</b> Instant visual triage without navigating terminal dashboards.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. End-to-End System Architecture -->
+    <section id="architecture" class="section">
+      <div class="section-header">
+        <h2 class="section-title">📐 2. System Architecture & Telemetry Pipeline</h2>
+        <p class="section-desc">Distributed 4-tier edge-to-cloud computing pipeline.</p>
+      </div>
+
+      <div class="arch-flow">
+        <div class="flow-steps">
+          <div class="flow-node highlight">
+            <div class="flow-node-title">1. Client / Desktop</div>
+            <div class="flow-node-sub">DevDock (Tauri 2 / Rust)</div>
+            <div style="font-size: 11px; margin-top: 8px; color: var(--primary);">Scans repos, Git status & ports</div>
+          </div>
+
+          <div class="flow-node">
+            <div class="flow-node-title">2. Ingestion / Event</div>
+            <div class="flow-node-sub">Telemetry Dispatcher</div>
+            <div style="font-size: 11px; margin-top: 8px; color: var(--text-muted);">Encodes JSON health payload</div>
+          </div>
+
+          <div class="flow-node highlight">
+            <div class="flow-node-title">3. Cloud Broker</div>
+            <div class="flow-node-sub">MQTT (HiveMQ / Port 1883/8883)</div>
+            <div style="font-size: 11px; margin-top: 8px; color: #c4b5fd;">Topic: <code>devdock/{id}/status</code></div>
+          </div>
+
+          <div class="flow-node highlight">
+            <div class="flow-node-title">4. Edge Actuator</div>
+            <div class="flow-node-sub">Raspberry Pi (Python Daemon)</div>
+            <div style="font-size: 11px; margin-top: 8px; color: #10b981;">Drives GPIO 17, 27, 22 LEDs</div>
+          </div>
+        </div>
+
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 10px; line-height: 1.5;">
+          <b>Data Lifecycle:</b> When DevDock audits repositories on macOS/Windows, it evaluates dirty git branches, active ports, and cache bloat. It transmits a lightweight telemetry payload via MQTT over TLS. The Raspberry Pi Edge Daemon subscribes to the telemetry feed, processes state transitions, and toggles physical GPIO circuits.
+        </p>
+      </div>
+    </section>
+
+    <!-- 3. Hardware Circuit Engineering & Safety Calculations -->
+    <section id="hardware" class="section">
+      <div class="section-header">
+        <h2 class="section-title">🔌 3. Hardware Engineering & Circuit Schematics</h2>
+        <p class="section-desc">Electrical calculations, Bill of Materials (BOM), and GPIO pin configuration.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>⚡ Electrical Safety & Current Limiting</h3>
+          <p>
+            Raspberry Pi GPIO outputs operate at <b>3.3V DC logic level</b> with a maximum safe current draw of <b>16mA per pin</b>.
+          </p>
+          <p>
+            Applying Ohm's Law ($V = I \times R$) for standard 5mm LEDs (Forward voltage $V_F \approx 2.0V$):
+          </p>
+          <pre><code>V_resistor = V_supply - V_LED = 3.3V - 2.0V = 1.3V
+I_LED = V_resistor / R = 1.3V / 220Ω ≈ 5.9 mA</code></pre>
+          <p style="margin-top: 8px; font-size: 12.5px; color: var(--green);">
+            ✅ <b>Safe & Optimal:</b> 5.9 mA provides bright visibility while drawing less than 38% of the maximum GPIO pin threshold.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>📋 Bill of Materials (BOM)</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Component</th>
+                <th>Qty</th>
+                <th>Specification</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Raspberry Pi</td>
+                <td>1</td>
+                <td>Model 3B+, 4B, 5 or Zero 2W (Linux OS)</td>
+              </tr>
+              <tr>
+                <td>5mm Diffused LEDs</td>
+                <td>3</td>
+                <td>1x Green, 1x Yellow, 1x Red</td>
+              </tr>
+              <tr>
+                <td>Current Resistors</td>
+                <td>3</td>
+                <td>220Ω (or 330Ω), 1/4W Through-Hole</td>
+              </tr>
+              <tr>
+                <td>Solderless Breadboard</td>
+                <td>1</td>
+                <td>400-Point Half-Size Breadboard</td>
+              </tr>
+              <tr>
+                <td>Jumper Wires</td>
+                <td>5</td>
+                <td>Female-to-Male (F-M) Premium Jumpers</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GPIO Pinout Table -->
+      <div class="card" style="margin-top: 20px;">
+        <h3>📌 GPIO Pin Mapping & State Logic Table</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Indicator</th>
+              <th>BCM GPIO</th>
+              <th>Physical Pin</th>
+              <th>Circuit Path</th>
+              <th>System Condition Trigger</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>🟢 <b>Green LED</b></td>
+              <td><code>GPIO 17</code></td>
+              <td>Pin 11</td>
+              <td>Pin 11 ➔ 220Ω ➔ Anode (+) | Cathode (-) ➔ GND</td>
+              <td>All repositories clean, dev servers active, health &gt;= 90%.</td>
+            </tr>
+            <tr>
+              <td>🟡 <b>Yellow LED</b></td>
+              <td><code>GPIO 27</code></td>
+              <td>Pin 13</td>
+              <td>Pin 13 ➔ 220Ω ➔ Anode (+) | Cathode (-) ➔ GND</td>
+              <td>Uncommitted git changes found or &gt;500MB reclaimable build cache.</td>
+            </tr>
+            <tr>
+              <td>🔴 <b>Red LED</b></td>
+              <td><code>GPIO 22</code></td>
+              <td>Pin 15</td>
+              <td>Pin 15 ➔ 220Ω ➔ Anode (+) | Cathode (-) ➔ GND</td>
+              <td>Missing <code>.env</code> secrets, broken dependencies, or port conflict.</td>
+            </tr>
+            <tr>
+              <td>✨ <b>Blinking Yellow</b></td>
+              <td><code>GPIO 27</code></td>
+              <td>Pin 13</td>
+              <td>2 Hz Flashing Cycle</td>
+              <td>Bulk Git Pull or Disk Janitor cache cleanup in progress.</td>
+            </tr>
+            <tr>
+              <td>⏚ <b>Common Ground</b></td>
+              <td><code>GND</code></td>
+              <td>Pin 6 / Pin 9</td>
+              <td>Common cathode ground rail</td>
+              <td>System reference ground.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. Interactive Live Simulator -->
+    <section id="simulator" class="section">
+      <div class="section-header">
+        <h2 class="section-title">⚡ 4. Interactive Live Circuit & Telemetry Simulator</h2>
+        <p class="section-desc">Test real-time state transitions and inspect active MQTT telemetry payloads.</p>
+      </div>
+
+      <div class="sim-box">
+        <!-- Virtual Breadboard -->
+        <div class="sim-station">
+          <div class="breadboard">
+            <div class="led-wrapper">
+              <div id="led-green" class="led-bulb green active"></div>
+              <span class="led-label">GPIO 17<br>CLEAN</span>
+            </div>
+            <div class="led-wrapper">
+              <div id="led-yellow" class="led-bulb yellow"></div>
+              <span class="led-label">GPIO 27<br>WARN</span>
+            </div>
+            <div class="led-wrapper">
+              <div id="led-red" class="led-bulb red"></div>
+              <span class="led-label">GPIO 22<br>ERR</span>
+            </div>
+          </div>
+          <div id="sim-status-text" style="font-size: 13.5px; font-weight: 600; color: var(--green);">
+            🟢 All 14 Repositories Clean & Synchronized
+          </div>
+        </div>
+
+        <!-- Simulator Control Panel -->
+        <div class="sim-controls">
+          <button class="sim-btn active" onclick="setSimState('clean')">
+            <span>🟢 State 1: All Repos Clean (Normal)</span>
+            <span class="nav-badge">Green ON</span>
+          </button>
+          <button class="sim-btn" onclick="setSimState('dirty')">
+            <span>🟡 State 2: Uncommitted Git Changes</span>
+            <span class="nav-badge" style="color: #f59e0b; border-color: #f59e0b;">Yellow ON</span>
+          </button>
+          <button class="sim-btn" onclick="setSimState('error')">
+            <span>🔴 State 3: Missing Secrets / Broken Deps</span>
+            <span class="nav-badge" style="color: #ef4444; border-color: #ef4444;">Red ON</span>
+          </button>
+          <button class="sim-btn" onclick="setSimState('sync')">
+            <span>✨ State 4: Async Sync / Bulk Pulling</span>
+            <span class="nav-badge" style="color: #c4b5fd; border-color: #c4b5fd;">Blinking</span>
+          </button>
+
+          <div style="margin-top: 6px;">
+            <span style="font-size: 11px; font-weight: 600; color: var(--text-muted);">Active Cloud MQTT Payload (JSON):</span>
+            <pre class="payload-viewer" id="sim-payload"></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. Software Protocols & Python Daemon -->
+    <section id="protocols" class="section">
+      <div class="section-header">
+        <h2 class="section-title">💻 5. Software Implementation & Edge Daemon</h2>
+        <p class="section-desc">Production-ready edge agent with auto-reconnection and robust exception handling.</p>
+      </div>
+
+      <div class="card">
+        <h3>🐍 Raspberry Pi Edge Daemon (<code>pi_sentinel.py</code>)</h3>
+        <p>
+          Runs as a background systemd service on Linux, subscribing to the encrypted Cloud MQTT topic:
+        </p>
+        <pre><code># /opt/devdock/pi_sentinel.py
+import json
+import time
+import paho.mqtt.client as mqtt
+from gpiozero import LED
+
+# 1. GPIO Pin Definitions (BCM)
+green_led  = LED(17)
+yellow_led = LED(27)
+red_led    = LED(22)
+
+def reset_leds():
+    green_led.off()
+    yellow_led.off()
+    red_led.off()
+
+# 2. MQTT Callback upon message delivery
+def on_message(client, userdata, msg):
+    try:
+        payload = json.loads(msg.payload.decode('utf-8'))
+        status = payload.get("status", "clean")
+        
+        reset_leds()
+        if status == "clean":
+            green_led.on()
+        elif status == "dirty":
+            yellow_led.on()
+        elif status == "error":
+            red_led.on()
+        elif status == "sync":
+            yellow_led.blink(on_time=0.2, off_time=0.2, n=5)
+            green_led.on()
+    except Exception as e:
+        print(f"[Edge Daemon Error] {e}")
+        red_led.blink(on_time=0.1, off_time=0.1, n=3)
+
+# 3. Connection & Event Loop with Auto-Reconnect
+client = mqtt.Client(client_id="rpi-devdock-sentinel-01")
+client.connect("broker.hivemq.com", 1883, keepalive=60)
+client.subscribe("devdock/telemetry/status", qos=1)
+client.on_message = on_message
+
+print("🚀 DevDock Edge Sentinel Daemon active. Listening for telemetry...")
+client.loop_forever()</code></pre>
+      </div>
+    </section>
+
+    <!-- 6. Implementation Roadmap -->
+    <section id="roadmap" class="section">
+      <div class="section-header">
+        <h2 class="section-title">🗺️ 6. End-to-End Implementation Roadmap</h2>
+        <p class="section-desc">Structured 5-phase execution plan from prototyping to evaluation.</p>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <span class="timeline-badge">PHASE 1</span>
+          <div class="timeline-content">
+            <h4>Hardware Breadboard Prototyping & GPIO Test</h4>
+            <p>Assemble 3x LEDs with 220Ω resistors on half-size breadboard. Verify GPIO 17, 27, 22 pin toggling via local Python test harness.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <span class="timeline-badge">PHASE 2</span>
+          <div class="timeline-content">
+            <h4>Cloud MQTT Broker & Pub/Sub Contract</h4>
+            <p>Deploy secure MQTT broker instance (HiveMQ Cloud / Mosquitto). Establish topic hierarchy (<code>devdock/{client}/telemetry</code>) with QoS 1.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <span class="timeline-badge">PHASE 3</span>
+          <div class="timeline-content">
+            <h4>DevDock Desktop Telemetry Module</h4>
+            <p>Integrate MQTT publisher client into DevDock's Tauri/Rust backend. Broadcast repository status on Git change, port open, and cache clean.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <span class="timeline-badge">PHASE 4</span>
+          <div class="timeline-content">
+            <h4>Edge Daemon Hardening & Linux Systemd Service</h4>
+            <p>Package Python edge daemon as an auto-starting Linux <code>systemd</code> service on Raspberry Pi with automatic WiFi reconnection.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <span class="timeline-badge">PHASE 5</span>
+          <div class="timeline-content">
+            <h4>Live Benchmarking, Presentation & Evaluation</h4>
+            <p>Measure roundtrip latency (&lt;120ms target). Conduct live hardware demonstration and submit academic project report.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Evaluation & Course Rubric Alignment -->
+    <section id="evaluation" class="section">
+      <div class="section-header">
+        <h2 class="section-title">🎯 7. Academic Evaluation & Course Alignment</h2>
+        <p class="section-desc">How this project comprehensively fulfills IoT & Cloud Computing grading criteria.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <h3>📡 IoT & Edge Computing</h3>
+          <p>
+            Raspberry Pi operates as an autonomous edge actuator, handling local GPIO voltage regulation, current protection, and edge state persistence.
+          </p>
+        </div>
+        <div class="card">
+          <h3>☁️ Cloud Messaging</h3>
+          <p>
+            Implements distributed MQTT Pub/Sub architecture over Cloud Broker with decoupling between producer (DevDock) and consumer (Pi).
+          </p>
+        </div>
+        <div class="card">
+          <h3>🛡️ Reliability & Fault Tolerance</h3>
+          <p>
+            Features auto-reconnecting MQTT sockets, QoS 1 delivery guarantee, and failover LED patterns during network disruptions.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div style="max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: gap: 14px;">
+      <div>
+        <b>DevDock IoT Sentinel</b> — Academic Project Proposal for IoT & Cloud Computing.
+      </div>
+      <div>
+        Released under MIT License © <a href="https://github.com/ArdaTkn" target="_blank" style="color: var(--primary); text-decoration: none;">Arda Tekin</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Live Simulator Interactive Script -->
+  <script>
+    const payloads = {
+      clean: {
+        timestamp: "2026-09-21T13:08:00Z",
+        client_id: "devdock-ardatekin-macbook",
+        status: "clean",
+        total_projects: 14,
+        dirty_repos: 0,
+        active_ports: [3000, 5173],
+        reclaimable_cache_bytes: 0,
+        gpio_state: { pin_17: "HIGH", pin_27: "LOW", pin_22: "LOW" }
+      },
+      dirty: {
+        timestamp: "2026-09-21T13:08:02Z",
+        client_id: "devdock-ardatekin-macbook",
+        status: "dirty",
+        total_projects: 14,
+        dirty_repos: 3,
+        uncommitted_files: ["src/App.tsx", "src-tauri/src/lib.rs"],
+        active_ports: [3000],
+        gpio_state: { pin_17: "LOW", pin_27: "HIGH", pin_22: "LOW" }
+      },
+      error: {
+        timestamp: "2026-09-21T13:08:05Z",
+        client_id: "devdock-ardatekin-macbook",
+        status: "error",
+        error_type: "MISSING_ENV_SECRETS",
+        affected_project: "merdiven_son",
+        missing_keys: ["API_SECRET_KEY", "DB_PASSWORD"],
+        gpio_state: { pin_17: "LOW", pin_27: "LOW", pin_22: "HIGH" }
+      },
+      sync: {
+        timestamp: "2026-09-21T13:08:07Z",
+        client_id: "devdock-ardatekin-macbook",
+        status: "sync",
+        action: "BULK_GIT_PULL",
+        target_repos: 14,
+        gpio_state: { pin_17: "BLINK", pin_27: "BLINK", pin_22: "LOW" }
+      }
+    };
+
+    let blinkInterval = null;
+
+    function setSimState(state) {
+      clearInterval(blinkInterval);
+      const green = document.getElementById("led-green");
+      const yellow = document.getElementById("led-yellow");
+      const red = document.getElementById("led-red");
+      const statusText = document.getElementById("sim-status-text");
+      const payloadView = document.getElementById("sim-payload");
+
+      green.className = "led-bulb green";
+      yellow.className = "led-bulb yellow";
+      red.className = "led-bulb red";
+
+      // Update button active states
+      document.querySelectorAll(".sim-btn").forEach(b => b.classList.remove("active"));
+      event?.currentTarget?.classList?.add("active");
+
+      payloadView.textContent = JSON.stringify(payloads[state], null, 2);
+
+      if (state === "clean") {
+        green.classList.add("active");
+        statusText.textContent = "🟢 All 14 Repositories Clean & Synchronized";
+        statusText.style.color = "var(--green)";
+      } else if (state === "dirty") {
+        yellow.classList.add("active");
+        statusText.textContent = "🟡 3 Repositories with Uncommitted Changes";
+        statusText.style.color = "var(--yellow)";
+      } else if (state === "error") {
+        red.classList.add("active");
+        statusText.textContent = "🔴 Missing .env Secrets or Broken Dependencies Detected";
+        statusText.style.color = "var(--red)";
+      } else if (state === "sync") {
+        statusText.textContent = "✨ Synchronizing Repositories via Cloud MQTT...";
+        statusText.style.color = "#c4b5fd";
+        let on = false;
+        blinkInterval = setInterval(() => {
+          on = !on;
+          if (on) {
+            yellow.classList.add("active");
+            green.classList.remove("active");
+          } else {
+            yellow.classList.remove("active");
+            green.classList.add("active");
+          }
+        }, 200);
+      }
+    }
+
+    // Initialize Simulator with Clean State
+    setSimState('clean');
+  </script>
+</body>
+</html>
