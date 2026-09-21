@@ -96,10 +96,17 @@ function handleUpdate() {
     console.log(dim("2. Installing dependencies..."));
     execSync("npm install", { cwd: rootDir, stdio: "inherit" });
 
-    console.log(dim("3. Linking CLI command globally..."));
+    console.log(dim("3. Building desktop application..."));
+    execSync("DEVELOPER_DIR=/Library/Developer/CommandLineTools npm run tauri build", {
+      cwd: rootDir,
+      stdio: "inherit",
+      env: { ...process.env, DEVELOPER_DIR: "/Library/Developer/CommandLineTools" },
+    });
+
+    console.log(dim("4. Linking CLI command globally..."));
     execSync("npm link", { cwd: rootDir, stdio: "inherit" });
 
-    console.log(`\n${green("✅ DevDock successfully updated to v" + getVersion() + "!")}`);
+    console.log(`\n${green("✅ DevDock successfully updated and rebuilt to v" + getVersion() + "!")}`);
   } catch (err) {
     console.error(`\x1b[31m❌ Update failed:\x1b[0m`, err.message);
   }
